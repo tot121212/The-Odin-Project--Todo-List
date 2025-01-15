@@ -74,3 +74,10 @@ class HTMLHandler {
     constructor() {
     }
 }
+
+document.addEventListener("DOMContentLoaded", () => {
+    const project = new Project()
+    project.createTodoList("Default")
+    project.getTodoLists()[0].addTodo(new Todo("Todo", "Description", "Due Date", "Priority"))
+    console.log(project.getTodoLists())
+})

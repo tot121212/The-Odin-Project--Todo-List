@@ -2,71 +2,99 @@ console.log("Hello, world!")
 
 class Todo {
     constructor(title, description, dueDate, priority) {
-        this.title = title
-        this.description = description
-        this.dueDate = dueDate
-        this.priority = priority
-        this.checked = false
+        this.title = title;
+        this.description = description;
+        this.dueDate = dueDate;
+        this.priority = priority;
+        this.checked = false;
     }
 }
 
 // multiple of these will exist, creatable by user, you can drag todos between them to transfer them around,
 class TodoList {
     constructor(label) {
-        this.label = label
-        this.todos = []
+        this.label = label;
+        this.todos = [];
     }
 
     addTodo(todo, idx) {
         if (idx === undefined) {
-            this.todos.push(todo)
+            this.todos.push(todo);
         } else {
-            this.todos.splice(idx, 0, todo)
+            this.todos.splice(idx, 0, todo);
         }
     }
 
     removeTodo(todo) {
-        const index = this.todos.indexOf(todo)
+        const index = this.todos.indexOf(todo);
         if (index !== -1) {
-            return this.todos.splice(index, 1)
+            return this.todos.splice(index, 1);
         }
     }
 
     getTodos() {
-        return this.todos
+        return this.todos;
     }
 }
 
 // grid of todoLists which will be displayed
 class Project {
-    constructor() {
-        this.todoLists = []
-    }
-
-    // button at end of todoListGrid will add new lists with a label via prompt or smthn
-    createTodoList(label) {
-        const todoList = new TodoList(label)
-        this.todoLists.push(todoList)
-        return todoList
+    constructor(label) {
+        this.label = label;
+        this.todoLists = [];
     }
     
     addTodoList(todoList, idx) {
         if (idx === undefined) {
-            this.todoLists.push(todoList)
+            this.todoLists.push(todoList);
         } else {
-            this.todoLists.splice(idx, 0, todoList)
+            this.todoLists.splice(idx, 0, todoList);
         }
     }
 
     removeTodoList(todoList) {
-        const index = this.todoLists.indexOf(todoList)
+        const index = this.todoLists.indexOf(todoList);
         if (index !== -1) {
-            return this.todoLists.splice(index, 1)
+            return this.todoLists.splice(index, 1);
         }
     }
 
     getTodoLists() {
-        return this.todoLists
+        return this.todoLists;
+    }
+}
+
+class Projects {
+    constructor() {
+        this.projects = [];
+        addDefaultProject();
+    }
+
+    getProjects() {
+        return this.projects;
+    }
+
+    addProject(project, idx) {
+        if (idx === undefined) {
+            this.projects.push(project);
+        } else {
+            this.projects.splice(idx, 0, project);
+        }
+    }
+
+    removeProject(project) {
+        const index = this.projects.indexOf(project);
+        if (index !== -1) {
+            return this.projects.splice(index, 1);
+        }
+    }
+
+    addDefaultProject(){
+        const project = new Project("Default");
+        project.addTodoList(new TodoList("Default"));
+        project.getTodoLists()[0].addTodo(new Todo("Todo", "Description", "Due Date", "Priority"));
+        addProject(project);
+        console.log("Default Project: " + String(project.getTodoLists()));
     }
 }
 
@@ -75,9 +103,24 @@ class HTMLHandler {
     }
 }
 
+class LocalStorageHandler {
+    constructor() {
+    }
+
+    // gets projects object from local or makes new
+    getProjectsFromLocalStorage = ()=>{
+        let projects = localStorage.getItem("projects");
+        if (projects) {
+            return JSON.parse(projects);
+        }
+        projects = new Projects();
+        if (!projects) { throw new Error("Projects object could not be made"); }
+        return projects;
+    }
+}
+
 document.addEventListener("DOMContentLoaded", () => {
-    const project = new Project()
-    project.createTodoList("Default")
-    project.getTodoLists()[0].addTodo(new Todo("Todo", "Description", "Due Date", "Priority"))
-    console.log(project.getTodoLists())
-})
+    const htmlHandler = new HTMLHandler();
+    const localStorageHandler = new LocalStorageHandler();
+    const projects = localStorageHandler.getProjectsFromLocalStorage();
+});

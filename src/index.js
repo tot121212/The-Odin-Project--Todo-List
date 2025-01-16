@@ -65,7 +65,7 @@ class Project {
 class Projects {
     constructor() {
         this.projects = [];
-        addDefaultProject();
+        this.addDefaultProject();
     }
 
     getProjects() {
@@ -78,6 +78,8 @@ class Projects {
         } else {
             this.projects.splice(idx, 0, project);
         }
+        console.log(`Project added: `);
+        console.log(project);
     }
 
     removeProject(project) {
@@ -91,14 +93,15 @@ class Projects {
         const project = new Project("Default");
         project.addTodoList(new TodoList("Default"));
         project.getTodoLists()[0].addTodo(new Todo("Todo", "Description", "Due Date", "Priority"));
-        addProject(project);
-        console.log("Default Project: " + String(project.getTodoLists()));
+        this.addProject(project);
     }
 }
 
 class HTMLHandler {
     constructor() {
     }
+
+    initialize
 }
 
 class LocalStorageHandler {
@@ -106,7 +109,7 @@ class LocalStorageHandler {
     }
 
     // gets projects object from local or makes new
-    getProjectsFromLocalStorage = ()=>{
+    getProjects = ()=>{
         let projects = localStorage.getItem("projects");
         if (projects) {
             return JSON.parse(projects);
@@ -120,5 +123,7 @@ class LocalStorageHandler {
 document.addEventListener("DOMContentLoaded", () => {
     const htmlHandler = new HTMLHandler();
     const localStorageHandler = new LocalStorageHandler();
-    const projects = localStorageHandler.getProjectsFromLocalStorage();
+    const projects = localStorageHandler.getProjects();
+    console.log("Projects: ");
+    console.log(projects);
 });

@@ -1,5 +1,3 @@
-console.log("Hello, world!")
-
 class Todo {
     constructor(title, description, dueDate, priority) {
         this.title = title;

@@ -101,11 +101,22 @@ class Projects {
 }
 
 class HTMLHandler {
-    constructor() {
-    }
-
     // need to be able to move elements around, delete them, edit them, all whilst said elements are saved correctly...
     // easiest way would be give each dom element a uuid and just find that specific element via data-id but thats annoying
+
+    static loadProjectsList = ()=>{
+        let main = document.querySelector("main");
+        main.innerHTML = "";
+        /*
+        document.addEventListener("click", (event)=>{
+            const projects = LocalStorageHandler.getProjects();
+            const project = projects.currentProject;
+            if (event.target.classList.contains("project")) {
+                HTMLHandler.createProject(project);
+            }
+        });
+        */
+    }
 
     static addLabelToElement = (element)=>{
         const labelElement = document.createElement("div");
@@ -194,9 +205,6 @@ class HTMLHandler {
 }
 
 class LocalStorageHandler {
-    constructor() {
-    }
-
     // gets projects object from local or makes new
     static getProjects = ()=>{
         let projects = localStorage.getItem("projects");
@@ -210,10 +218,8 @@ class LocalStorageHandler {
 }
 
 document.addEventListener("DOMContentLoaded", () => {
-    const htmlHandler = new HTMLHandler();
     const projects = LocalStorageHandler.getProjects();
     console.log("Projects: ");
     console.log(projects);
-    HTMLHandler.destroyExistingProject();
-    HTMLHandler.createProject(projects.currentProject);
+    HTMLHandler.loadProjectsList();
 });

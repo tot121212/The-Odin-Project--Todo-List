@@ -1,7 +1,7 @@
 import { HTMLHandler } from "./html-handler.js";
 import { Projects } from "./index.js";
 
-export const loadProjectList = ()=>{
+HTMLHandler.loadProjectList = ()=>{
     HTMLHandler.clearContent();
 
     const projectContainer = document.createElement("div");

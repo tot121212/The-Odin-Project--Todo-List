@@ -2,7 +2,8 @@ import "./css-reset.css";
 import "./template.css";
 
 import { LocalStorageHandler } from "./local-storage-handler.js";
-import { loadProjectList } from "./projects-list.js";
+import { HTMLHandler } from "./html-handler.js";
+import "./projects-list.js";
 
 class Todo {
     constructor(title, description, dueDate, priority) {
@@ -104,7 +105,7 @@ document.addEventListener("DOMContentLoaded", () => {
     console.log("Projects: ");
     console.log(Projects.list);
     
-    loadProjectList(Projects);
+    HTMLHandler.loadProjectList(Projects);
     
     document.querySelector("nav").addEventListener("click", (e)=>{
         switch (e.target.id){

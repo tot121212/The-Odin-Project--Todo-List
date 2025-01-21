@@ -55,10 +55,11 @@ export class HTMLHandler {
         const todoListElement = document.createElement("div");
         todoListElement.classList.add("todo-list");
         
-        const todoListElementName = document.createElement("header");
-        todoListElementName.textContent = todoList.name
-        todoListElement.append(todoListElementName);
-        
+        const todoListNameElement = document.createElement("header");
+        todoListNameElement.classList.add("todo-list-name");
+        todoListNameElement.textContent = todoList.name;
+        todoListElement.append(todoListNameElement);
+
         return todoListElement;
     }
 
@@ -86,6 +87,7 @@ export class HTMLHandler {
         const projectNameElement =  document.createElement("header");
         projectNameElement.classList.add("project-name");
         projectNameElement.textContent = project.name;
+        
         projectElement.append(projectNameElement);
 
         const projectDescElement = document.createElement("main");

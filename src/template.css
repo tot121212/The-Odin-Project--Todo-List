@@ -1,0 +1,71 @@
+body{
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 16px;
+}
+
+body > nav{
+    grid-column: 1/2;
+    grid-row: 1/2;
+
+    display: flex;
+    flex-direction: row;
+    min-height: 3rem;
+}
+
+body > .content{
+    
+    display: grid;
+    grid-template-columns: 1fr;
+    grid-template-rows: auto 7fr;
+    gap: 12px;
+}
+
+.projects-container{
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-auto-rows: 1fr 1fr;
+    justify-items: center;
+    gap: 12px;
+}
+
+.project{
+    min-height: 128px;
+
+    align-self: center;
+    width: 90%;
+    height: 90%;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    border: 1px solid black;
+}
+
+.project:hover{
+    cursor: grab;
+}
+
+.project-name{
+    font-style: italic;
+    font-size: xx-large;
+}
+
+.project-description{
+    font-weight: lighter;
+}
+
+.todo-lists{
+    display: grid;
+    grid-template-columns: 1fr;
+    grid-template-rows: 1fr;
+    grid-auto-columns: 1fr;
+    grid-auto-flow: column;
+    
+}
+
+.todo-list .todo-list-name{
+    border-bottom: 1px solid black;
+}

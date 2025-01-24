@@ -1,3 +1,5 @@
+import { Projects } from "./index.js";
+
 export class HTMLHandler {
     // need to be able to move elements around, delete them, edit them, all whilst said elements are saved correctly...
     // easiest way would be give each dom element a uuid and just find that specific element via data-id but thats annoying
@@ -20,64 +22,84 @@ export class HTMLHandler {
         document.querySelector(".content").innerHTML = "";
     }
 
-    static createTodoElement = (todo)=>{
+    // creates html element for todo
+    static createTodoElement = ()=>{
         const todoElement = document.createElement("div");
         todoElement.classList.add("todo");
+        
+        const todoTitleElement = document.createElement("header");
+        todoTitleElement.classList.add("todo-title");
+        todoElement.append(todoTitleElement);
+
+        const todoDescElement = document.createElement("main");
+        todoDescElement.classList.add("todo-desc");
+        todoElement.append(todoDescElement);
+
+        const todoDueDateElement = document.createElement("footer");
+        todoDueDateElement.classList.add("todo-due-date");
+        todoElement.append(todoDueDateElement);
+
         return todoElement;
     }
 
-    static createTodosContainer = ()=>{
-        const todosContainer = document.getElementById("todos");
-        todosContainer.classList.add("todos");
-        return todosContainer;
+    // updates todoElement with todo data
+    static updateTodoElement = (todo, todoElement)=>{
+        const todoTitleElement = todoElement.querySelector(".todo-title");
+        todoTitleElement.textContent = todo.title;
+        
+        const todoDescElement = todoElement.querySelector(".todo-desc");
+        todoDescElement.textContent = todo.description;
+
+        const todoDueDateElement = todoElement.querySelector(".todo-due-date");
+        todoDueDateElement.textContent = todo.dueDate;
     }
 
-    static createTodos = (todos) => {
-        const todosContainer = this.createTodosContainer();
-        todos.forEach(todo => {
-            const todoElement = createTodoElement(todo);
-            todosContainer.appendChild(todoElement);
-        });
-    }
-
-
-    // need to be able to move todo lists around so move in array save to storage, never worry abt updating page at all cuz we working with either new elements or existing ones.
-    static updateTodoLists = (todoLists, projectElement) => {
-        const todoListsContainer = projectElement.querySelector("div.todo-lists");
-        todoListsContainer.innerHTML = "";
-        todoLists.forEach(todoList => {
-            const todoListElement = this.createTodoListElement(todoList);
-            todoListsContainer.appendChild(todoListElement);
-        });
-    }
-
+    // list element that contains todos
     static createTodoListElement = (todoList) => {
         const todoListElement = document.createElement("div");
         todoListElement.classList.add("todo-list");
         
         const todoListNameElement = document.createElement("header");
         todoListNameElement.classList.add("todo-list-name");
-        todoListNameElement.textContent = todoList.name;
         todoListElement.append(todoListNameElement);
+
+        todoList.todos.forEach(todo => {
+            const todoElement = this.createTodoElement();
+            todoListElement.append(todoElement);
+        });
 
         return todoListElement;
     }
 
-    static createTodoListsContainer = ()=>{
-        const todoListsContainer = document.createElement("div");
-        todoListsContainer.classList.add("todo-lists");
-        return todoListsContainer;
+    // update name of todoListElement with info from todo
+    static updateTodoListElement = (todoList, todoListElement) => {
+        const todoListNameElement = todoListElement.querySelector(".todo-list-name");
+        todoListNameElement.textContent = todoList.name;
+
+        todoListElement.querySelectorAll(".todo").forEach(
+            (todoElement, index) => {
+                this.updateTodoElement(todoList.todos[index], todoElement);
+        });
     }
 
-    static createTodoLists = (todoLists, projectElement) => {
-        const todoListsContainer = this.createTodoListsContainer();
+    // container for the lists themselves
+    static createTodoListsElement = (todoLists) => {
+        const todoListsElement = document.createElement("div");
+        todoListsElement.classList.add("todo-lists");
         
         todoLists.forEach(todoList => {
             const todoListElement = this.createTodoListElement(todoList);
-            todoListsContainer.appendChild(todoListElement);
+            todoListsElement.append(todoListElement);
         });
 
-        projectElement.appendChild(todoListsContainer);
+        return todoListsElement;
+    }
+
+    static updateTodoListsElement = (todoLists, todoListsElement) => {
+        todoListsElement.querySelectorAll(".todo-list").forEach(
+            (todoListElement, index) => {
+                this.updateTodoListElement(todoLists[index], todoListElement);
+        });
     }
 
     static createProjectElement = (project)=>{
@@ -87,28 +109,22 @@ export class HTMLHandler {
         const projectNameElement =  document.createElement("header");
         projectNameElement.classList.add("project-name");
         projectNameElement.textContent = project.name;
-        
         projectElement.append(projectNameElement);
 
         const projectDescElement = document.createElement("main");
         projectDescElement.classList.add("project-desc");
         projectDescElement.textContent = project.description;
         projectElement.append(projectDescElement);
-        
+
         return projectElement;
     }
 
-    static createProject = (project) => {
-        const projectElement = this.createProjectElement(project);
-
-        this.createTodoLists(project.todoLists, projectElement);
-        this.updateTodoLists(project.todoLists, projectElement);
-
-        document.querySelector(".content").appendChild(projectElement);
+    static updateProjectElement = (project, projectElement)=>{
+        projectElement.querySelector(".project-name").textContent = project.name;
     }
 
     static destroyExistingProject = () => {
-        const existingProject = document.querySelector("div.project");
+        const existingProject = document.querySelector(".project");
         if (existingProject) { existingProject.remove(); }
     }
 
@@ -122,7 +138,7 @@ export class HTMLHandler {
         const projectList = Projects.list;
         for (const project of projectList){
             const projectElement = this.createProjectElement(project);
-            projectContainer.appendChild(projectElement);
+            projectContainer.append(projectElement);
         }
     
         projectContainer.addEventListener("click", (e)=>{
@@ -137,7 +153,9 @@ export class HTMLHandler {
                         const projectElement = this.createProjectElement(project);
                         const todoListsElement = this.createTodoListsElement(project.todoLists, projectElement);
                         projectElement.append(todoListsElement);
-                        this.initializeProjectElement(project, projectElement);
+                        this.updateProjectElement(project, projectElement);
+                        this.updateTodoListsElement(project.todoLists, projectElement.querySelector(".todo-lists"));
+                        document.querySelector(".content").append(projectElement);
                         break;
                     }
                 }

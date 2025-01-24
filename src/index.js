@@ -1,12 +1,13 @@
 import "./css-reset.css";
 import "./template.css";
 
+import { v4 as uuidv4 } from 'uuid';
 import { LocalStorageHandler } from "./local-storage-handler.js";
 import { HTMLHandler } from "./html-handler.js";
-import "./projects-list.js";
 
 class Todo {
     constructor(title, description, dueDate, priority) {
+        this.uuid = uuidv4();
         this.title = title;
         this.description = description;
         this.dueDate = dueDate;
@@ -18,6 +19,7 @@ class Todo {
 // multiple of these will exist, creatable by user, you can drag todos between them to transfer them around,
 class TodoList {
     constructor(name) {
+        this.uuid = uuidv4();
         this.name = name;
         this.todos = [];
     }
@@ -45,6 +47,7 @@ class TodoList {
 // grid of todoLists which will be displayed
 class Project {
     constructor(name, desc) {
+        this.uuid = uuidv4();
         this.name = name;
         this.description = desc;
         this.todoLists = [];
@@ -71,14 +74,12 @@ export class Projects {
     static init(){
         console.log("Initializing Projects");
         this.list = [];
-        this.nameToProjectMap = new Map();
         this.current = null;
         this.addDefaultProject();
     }
 
     static addProject(project) {
         this.list.push(project);
-        this.nameToProjectMap.set(project.name, project);
         console.log(`Project added: `);
         console.log(project);
     }
@@ -86,15 +87,14 @@ export class Projects {
     static removeProject(project) {
         const index = this.list.indexOf(project);
         if (index !== -1) {
-            this.nameToProjectMap.delete(project.name);
             return this.list.splice(index, 1);
         }
     }
 
     static addDefaultProject(){
         const project = new Project("Default", "");
-        project.addTodoList(new TodoList("Default"));
-        project.todoLists[0].addTodo(new Todo("Todo", "Description", "Due Date", "Priority"));
+        project.addTodoList(new TodoList("Tasks"));
+        project.todoLists[0].addTodo(new Todo("Get milk.", "", "1/24/2025", ""));
         this.addProject(project);
         this.current = this.list[0];
     }
@@ -105,12 +105,12 @@ document.addEventListener("DOMContentLoaded", () => {
     console.log("Projects: ");
     console.log(Projects.list);
     
-    HTMLHandler.loadProjectList(Projects);
+    HTMLHandler.loadProjectsList(Projects);
     
     document.querySelector("nav").addEventListener("click", (e)=>{
         switch (e.target.id){
             case "projects-btn":
-                loadProjectList(Projects);
+                HTMLHandler.loadProjectsList(Projects);
                 break;
         }
     });

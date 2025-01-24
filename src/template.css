@@ -76,3 +76,9 @@ body > .content{
     border-bottom: 1px solid black;
 
 }
+
+.todo{
+    display: flex;
+    flex-direction: row;
+    gap: 12px;
+}

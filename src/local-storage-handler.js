@@ -3,37 +3,51 @@ import { Projects } from "./index.js";
 let reset = true;
 
 export class LocalStorageHandler {
-    // gets projects object from local or makes new
-    static loadProjectData = ()=>{
-        const init = ()=>{
-            Projects.init();
-            localStorage.setItem("projects", JSON.stringify({
-                "list" : Projects.list,
-                "nameToProjectMap" : Projects.nameToProjectMap,
-                "current" : Projects.current
-            }));
-        };
+    static saveProjectData = ()=>{
+        localStorage.setItem("projects", JSON.stringify({
+            "list" : Projects.list,
+            "current" : Projects.current
+        }));
+    }
 
+    static loadDefaultProject = ()=>{
+        Projects.init();
+        this.saveProjectData();
+    }
+
+    static loadProjectData = ()=>{
         try {
             if (reset === true){
-                throw new Error("Reset");
+                throw new Error("reset === true");
             }
             const rawData = localStorage.getItem("projects");
+            if (typeof rawData === "undefined"){
+                throw new Error("Projects does not exist, creating default project");
+            }
             if (!rawData || typeof rawData !== "string"){
-                throw new Error("rawData does not exist");
+                throw new Error("Error getting projects");
             }
     
             const projectsData = JSON.parse(rawData);
             if (!projectsData || typeof projectsData !== "object"){
-                throw new Error("Could not parse");
+                throw new Error("Could not parse projects");
             }
 
             Projects.list = projectsData.list || [];
-            Projects.nameToProjectMap = projectsData.nameToProjectMap || new Map(),
             Projects.current = projectsData.current || null;
 
         } catch (error) {
-            init();
+            switch (error.message){
+                case "Projects does not exist, creating default project":
+                case "reset === true":
+                    console.log(error);
+                    this.loadDefaultProject();
+                    break;
+                case "Error getting projects":
+                case "Could not parse projects":
+                    console.error(error);
+                    break;
+            }
         }
     }
 }

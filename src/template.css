@@ -15,7 +15,6 @@ body > nav{
 }
 
 body > .content{
-    
     display: grid;
     grid-template-columns: 1fr;
     grid-template-rows: auto 7fr;
@@ -81,4 +80,9 @@ body > .content{
     display: flex;
     flex-direction: row;
     gap: 12px;
+}
+
+.todo:hover{
+    cursor: grab;
+    border: 1px solid lightblue;
 }

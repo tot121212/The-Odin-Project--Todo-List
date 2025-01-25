@@ -16,15 +16,38 @@ class Todo {
     }
 }
 
+const getObjectFromMapWithUUID = (uuid, map)=>{
+    try {
+        if (!map.has(uuid)){
+            throw new Error(`Map does not have UUID`);
+        }
+        const object = map.get(uuid);
+        if (typeof object !== "object"){
+            throw new Error(`Object not found in map`);
+        }
+        //console.log(`Object of: map, uuid, found: `);
+        //console.log(map);
+        //console.log(uuid);
+        console.log(object);
+        return object;
+    }
+    catch (e){
+        console.log(e.message);
+        return null;
+    }
+}
+
 // multiple of these will exist, creatable by user, you can drag todos between them to transfer them around,
 class TodoList {
     constructor(name) {
         this.uuid = uuidv4();
         this.name = name;
         this.todos = [];
+        this.uuidToTodo = new Map();
     }
 
     addTodo(todo, idx) {
+        this.uuidToTodo.set(todo.uuid, todo);
         if (idx === undefined) {
             this.todos.push(todo);
         } else {
@@ -33,10 +56,15 @@ class TodoList {
     }
 
     removeTodo(todo) {
+        this.uuidToTodo.delete(uuid);
         const index = this.todos.indexOf(todo);
-        if (index !== -1) {
+        if (index >= 0) {
             return this.todos.splice(index, 1);
         }
+    }
+
+    getTodo(uuid){
+        return getObjectFromMapWithUUID(uuid, this.uuidToTodo);
     }
 }
 
@@ -47,9 +75,11 @@ class Project {
         this.name = name;
         this.description = desc;
         this.todoLists = [];
+        this.uuidToTodoList = new Map();
     }
 
     addTodoList(todoList, idx) {
+        this.uuidToTodoList.set(todoList.uuid, todoList);
         if (idx === undefined) {
             this.todoLists.push(todoList);
         } else {
@@ -58,10 +88,15 @@ class Project {
     }
 
     removeTodoList(todoList) {
+        this.uuidToTodoList.delete(uuid);
         const index = this.todoLists.indexOf(todoList);
-        if (index !== -1) {
+        if (index >= 0) {
             return this.todoLists.splice(index, 1);
         }
+    }
+
+    getTodoList(uuid){
+        return getObjectFromMapWithUUID(uuid, this.uuidToTodoList);
     }
 }
 
@@ -71,22 +106,28 @@ export class Projects {
         console.log("Initializing Projects");
         this.list = [];
         this.current = null;
-        this.uuidToProject = newMap();
+        this.uuidToProject = new Map();
         this.addDefaultProject();
     }
 
     static addProject(project) {
+        this.uuidToProject.set(project.uuid, project);
         this.list.push(project);
-        project.uuidToProject.set(project.uuid, project);
+        
         console.log(`Project added: `);
         console.log(project);
     }
 
     static removeProject(project) {
+        this.uuidToProject.delete(project.uuid);
         const index = this.list.indexOf(project);
-        if (index !== -1) {
+        if (index >= 0) {
             return this.list.splice(index, 1);
         }
+    }
+
+    static getProject(uuid){
+        return getObjectFromMapWithUUID(uuid, this.uuidToProject);
     }
 
     static addDefaultProject(){
@@ -94,17 +135,6 @@ export class Projects {
         project.addTodoList(new TodoList("Tasks"));
         project.todoLists[0].addTodo(new Todo("Get milk.", "", "1/24/2025", ""));
         this.addProject(project);
-        this.current = this.list[0];
-    }
-
-    static getProject(uuid){
-        if (this.uuidToProject.has(uuid)){
-            return this.uuidToProject.get(uuid);
-        }
-        else{
-            console.error(`Project with uuid ${uuid} not found`);
-            return null;
-        }
     }
 }
 
@@ -113,13 +143,13 @@ document.addEventListener("DOMContentLoaded", () => {
     console.log("Projects: ");
     console.log(Projects.list);
     
-    HTMLHandler.loadProjectsList(Projects);
+    HTMLHandler.loadProjectListToContent();
     
     document.querySelector("nav").addEventListener("click", (e)=>{
         switch (e.target.id){
             case "projects-btn":
                 HTMLHandler.clearContent()
-                HTMLHandler.loadProjectListToContent(Projects);
+                HTMLHandler.loadProjectListToContent();
                 break;
         }
     });

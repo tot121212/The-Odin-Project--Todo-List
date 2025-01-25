@@ -24,7 +24,7 @@ export class HTMLHandler {
     }
 
     // creates html element for todo
-    static createTodoElement = ()=>{
+    static createTodoElement = (todo)=>{
         const todoElement = document.createElement("div");
         todoElement.classList.add("todo");
         // uuid will never change so we dont use in update to avoid any future mistakes
@@ -73,7 +73,7 @@ export class HTMLHandler {
         todoListElement.append(todoListNameElement);
 
         todoList.todos.forEach(todo => {
-            const todoElement = this.createTodoElement();
+            const todoElement = this.createTodoElement(todo);
             todoListElement.append(todoElement);
         });
 
@@ -138,21 +138,27 @@ export class HTMLHandler {
         if (existingProject) { existingProject.remove(); }
     }
 
-    static onEditTodoClicked = ()=>{
-        const todoElement = e.target.closest(".todo");
-        const todoUUID = todoElement.dataset.uuid;
-        const todoListUUID = todoElement.closest(".todo-list").dataset.uuid;
+    static onEditTodoClicked = (e)=>{
         const projectUUID = todoElement.closest(".project").dataset.uuid;
-        // run a func that takes the uuid and returns the specified todo from the project
         const project = Projects.getProject(projectUUID);
-        
+
+        const todoListUUID = todoElement.closest(".todo-list").dataset.uuid;
+        const todoList = project.getTodoList(todoListUUID);
+
+        const todoUUID = todoElement.dataset.uuid;
+        const todo = todoList.getTodo(todoUUID);
+
+        // display the edit 
     }
 
     static projectListenForClicks = (projectElement)=>{
         projectElement.addEventListener("click", (e)=>{
+            const todoElement = e.target.closest(".todo");
             if (e.target.classList.contains("edit-todo")){
-                onEditTodoClicked(e.target);
+                this.onEditTodoClicked(e, );
             }
+            
+            
         });
     }
 
@@ -186,7 +192,7 @@ export class HTMLHandler {
                 for (const project of Projects.list){
                     if (e.target.dataset.uuid === project.uuid){
                         this.clearContent();
-                        loadProjectToContent(project);
+                        HTMLHandler.loadProjectToContent(project);
                         break;
                     }
                 }
@@ -194,3 +200,38 @@ export class HTMLHandler {
         });
     }
 }
+
+/*
+export class ModalHandler {
+    static createModal = (modalType, modalContent) => {
+        const modal = document.createElement("div");
+        modal.classList.add("modal");
+
+        const modalContentElement = document.createElement("div");
+        modalContentElement.classList.add("modal-content");
+        modalContentElement.textContent = modalContent;
+        modal.append(modalContentElement);
+
+        const modalCloseButton = document.createElement("button");
+        modalCloseButton.classList.add("modal-close");
+        modalCloseButton.textContent = "Close";
+        modal.append(modalCloseButton);
+
+        return modal;
+    }
+
+    static showModal = (modal) => {
+        document.querySelector(".content").append(modal);
+    }
+
+    static closeModal = (modal) => {
+        modal.remove();
+    }
+
+    static listenForModalClose = (modal) => {
+        modal.querySelector(".modal-close").addEventListener("click", (e) => {
+            this.closeModal(modal);
+        });
+    }
+}
+*/

@@ -1,5 +1,6 @@
 import { Projects } from "./index.js";
 
+
 export class HTMLHandler {
     // need to be able to move elements around, delete them, edit them, all whilst said elements are saved correctly...
     // easiest way would be give each dom element a uuid and just find that specific element via data-id but thats annoying
@@ -26,6 +27,8 @@ export class HTMLHandler {
     static createTodoElement = ()=>{
         const todoElement = document.createElement("div");
         todoElement.classList.add("todo");
+        // uuid will never change so we dont use in update to avoid any future mistakes
+        todoElement.dataset.uuid = todo.uuid;
         
         const todoTitleElement = document.createElement("header");
         todoTitleElement.classList.add("todo-title");
@@ -63,6 +66,7 @@ export class HTMLHandler {
     static createTodoListElement = (todoList) => {
         const todoListElement = document.createElement("div");
         todoListElement.classList.add("todo-list");
+        todoListElement.dataset.uuid = todoList.uuid;
         
         const todoListNameElement = document.createElement("header");
         todoListNameElement.classList.add("todo-list-name");
@@ -110,6 +114,7 @@ export class HTMLHandler {
     static createProjectElement = (project)=>{
         const projectElement = document.createElement("div");
         projectElement.classList.add("project");
+        projectElement.dataset.uuid = project.uuid;
 
         const projectNameElement =  document.createElement("header");
         projectNameElement.classList.add("project-name");
@@ -133,9 +138,38 @@ export class HTMLHandler {
         if (existingProject) { existingProject.remove(); }
     }
 
-    static loadProjectsList = ()=>{
-        this.clearContent();
-    
+    static onEditTodoClicked = ()=>{
+        const todoElement = e.target.closest(".todo");
+        const todoUUID = todoElement.dataset.uuid;
+        const todoListUUID = todoElement.closest(".todo-list").dataset.uuid;
+        const projectUUID = todoElement.closest(".project").dataset.uuid;
+        // run a func that takes the uuid and returns the specified todo from the project
+        const project = Projects.getProject(projectUUID);
+        
+    }
+
+    static projectListenForClicks = (projectElement)=>{
+        projectElement.addEventListener("click", (e)=>{
+            if (e.target.classList.contains("edit-todo")){
+                onEditTodoClicked(e.target);
+            }
+        });
+    }
+
+    static loadProjectToContent = (project)=>{
+        const projectElement = this.createProjectElement(project);
+        const todoListsElement = this.createTodoListsElement(project.todoLists, projectElement);
+        projectElement.append(todoListsElement);
+
+        this.updateProjectElement(project, projectElement);
+        this.updateTodoListsElement(project.todoLists, projectElement.querySelector(".todo-lists"));
+
+        document.querySelector(".content").append(projectElement);
+
+        this.projectListenForClicks(projectElement);
+    }
+
+    static loadProjectListToContent = ()=>{
         const projectContainer = document.createElement("div");
         projectContainer.classList.add("projects-container");
         document.querySelector(".content").append(projectContainer);
@@ -148,19 +182,11 @@ export class HTMLHandler {
     
         projectContainer.addEventListener("click", (e)=>{
             if (e.target.classList.contains("project")){
-                const projectNameElement = e.target.querySelector(".project-name");
-                if (!projectNameElement) {
-                    throw new Error("Project name element not found");
-                }
+                // couldve done a map of the project keys but too late, this is where im staring to learn more and more that planning is super important
                 for (const project of Projects.list){
-                    if (projectNameElement.textContent === project.name){
+                    if (e.target.dataset.uuid === project.uuid){
                         this.clearContent();
-                        const projectElement = this.createProjectElement(project);
-                        const todoListsElement = this.createTodoListsElement(project.todoLists, projectElement);
-                        projectElement.append(todoListsElement);
-                        this.updateProjectElement(project, projectElement);
-                        this.updateTodoListsElement(project.todoLists, projectElement.querySelector(".todo-lists"));
-                        document.querySelector(".content").append(projectElement);
+                        loadProjectToContent(project);
                         break;
                     }
                 }

@@ -6,7 +6,8 @@ export class LocalStorageHandler {
     static saveProjectData = ()=>{
         localStorage.setItem("projects", JSON.stringify({
             "list" : Projects.list,
-            "current" : Projects.current
+            "current" : Projects.current,
+            "uuidToProject": Projects.uuidToProject
         }));
     }
 
@@ -35,6 +36,7 @@ export class LocalStorageHandler {
 
             Projects.list = projectsData.list || [];
             Projects.current = projectsData.current || null;
+            Projects.uuidToProject = projectsData.uuidToProject || new Map();
 
         } catch (error) {
             switch (error.message){

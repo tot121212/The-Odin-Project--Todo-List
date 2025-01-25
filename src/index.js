@@ -71,11 +71,13 @@ export class Projects {
         console.log("Initializing Projects");
         this.list = [];
         this.current = null;
+        this.uuidToProject = newMap();
         this.addDefaultProject();
     }
 
     static addProject(project) {
         this.list.push(project);
+        project.uuidToProject.set(project.uuid, project);
         console.log(`Project added: `);
         console.log(project);
     }
@@ -94,6 +96,16 @@ export class Projects {
         this.addProject(project);
         this.current = this.list[0];
     }
+
+    static getProject(uuid){
+        if (this.uuidToProject.has(uuid)){
+            return this.uuidToProject.get(uuid);
+        }
+        else{
+            console.error(`Project with uuid ${uuid} not found`);
+            return null;
+        }
+    }
 }
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -106,7 +118,8 @@ document.addEventListener("DOMContentLoaded", () => {
     document.querySelector("nav").addEventListener("click", (e)=>{
         switch (e.target.id){
             case "projects-btn":
-                HTMLHandler.loadProjectsList(Projects);
+                HTMLHandler.clearContent()
+                HTMLHandler.loadProjectListToContent(Projects);
                 break;
         }
     });

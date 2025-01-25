@@ -66,23 +66,29 @@ body > .content{
 }
 
 .todo-list{
+    padding: 12px;
     max-width: 50%;
 }
 
-.todo-list .todo-list-name{
+.todo-list-name{
     font-size: large;
     text-align: center;
     border-bottom: 1px solid black;
-
+    padding: 8px;
+    margin-bottom: 8px;
 }
 
 .todo{
     display: flex;
-    flex-direction: row;
+    flex-direction: column;
     gap: 12px;
 }
 
 .todo:hover{
     cursor: grab;
     border: 1px solid lightblue;
+}
+
+button.edit-todo{
+    align-self: end;
 }

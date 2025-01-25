@@ -39,6 +39,11 @@ export class HTMLHandler {
         todoDueDateElement.classList.add("todo-due-date");
         todoElement.append(todoDueDateElement);
 
+        const todoEditButton = document.createElement("button");
+        todoEditButton.classList.add("edit-todo");
+        todoEditButton.textContent = "Edit";
+        todoElement.append(todoEditButton);
+
         return todoElement;
     }
 

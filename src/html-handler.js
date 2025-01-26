@@ -30,7 +30,6 @@ export class HTMLHandler {
     static createTodoElement = (todo)=>{
         const todoElement = document.createElement("div");
         todoElement.classList.add("todo");
-        // uuid will never change so we dont use in update to avoid any future mistakes
         todoElement.dataset.uuid = todo.uuid;
 
         todoElement.innerHTML = `

@@ -1,3 +1,13 @@
+svg, object[type="image/svg+xml"] {
+    width: 100%;
+    height: 100%;
+}
+
+button.logo{
+    border: none;
+    background: none;
+}
+
 body{
     display: flex;
     flex-direction: column;
@@ -43,10 +53,6 @@ body > .content{
     padding: 12px;
 }
 
-.projects-container .project:hover{
-    cursor: grab;
-}
-
 .project-name{
     font-style: italic;
     font-size: xx-large;
@@ -84,11 +90,21 @@ body > .content{
     gap: 12px;
 }
 
-.todo:hover{
+button.edit-todo{
+    aspect-ratio: 1/1;
+    align-self: end;
+    width: 10%;
+}
+
+.grabbable:hover{
     cursor: grab;
+}
+
+.grabbable-blue-border:hover{
     border: 1px solid lightblue;
 }
 
-button.edit-todo{
-    align-self: end;
+.grabbable > * {
+    position: relative;
+    z-index: -1;
 }

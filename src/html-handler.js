@@ -1,4 +1,7 @@
 import { Projects } from "./index.js";
+import editTodoIMG from "./media/angle-right.svg";
+import submitTodoIMG from "./media/check.svg";
+import cancelTodoIMG from "./media/cross.svg";
 
 
 export class HTMLHandler {

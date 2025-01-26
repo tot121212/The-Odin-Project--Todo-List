@@ -146,7 +146,6 @@ export class HTMLHandler {
 
     static projectListenForClicks = (projectElement)=>{
         projectElement.addEventListener("click", (e)=>{
-            const todoElement = e.target.closest(".todo");
             if (e.target.classList.contains("edit-todo")){
                 this.onEditTodoClicked(e);
             }

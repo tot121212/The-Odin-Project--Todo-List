@@ -32,23 +32,13 @@ export class HTMLHandler {
         todoElement.classList.add("todo");
         // uuid will never change so we dont use in update to avoid any future mistakes
         todoElement.dataset.uuid = todo.uuid;
-        
-        const todoTitleElement = document.createElement("header");
-        todoTitleElement.classList.add("todo-title");
-        todoElement.append(todoTitleElement);
 
-        const todoDescElement = document.createElement("main");
-        todoDescElement.classList.add("todo-desc");
-        todoElement.append(todoDescElement);
-
-        const todoDueDateElement = document.createElement("footer");
-        todoDueDateElement.classList.add("todo-due-date");
-        todoElement.append(todoDueDateElement);
-
-        const todoEditButton = document.createElement("button");
-        todoEditButton.classList.add("edit-todo");
-        todoEditButton.textContent = "Edit";
-        todoElement.append(todoEditButton);
+        todoElement.innerHTML = `
+        <header class="todo-title"></header>
+        <main class="todo-desc"></main>
+        <div class="todo-due-date"></div>
+        <button class="grabbable logo edit-todo" type="button"><object data="${editTodoIMG}" type="image/svg+xml" alt="Edit Todo"></object></button>
+        `;
 
         return todoElement;
     }

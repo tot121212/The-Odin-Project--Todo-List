@@ -131,6 +131,8 @@ export class HTMLHandler {
     }
 
     static onEditTodoClicked = (e)=>{
+        const todoElement = e.target.closest(".todo");
+
         const projectUUID = todoElement.closest(".project").dataset.uuid;
         const project = Projects.getProject(projectUUID);
 

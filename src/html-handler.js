@@ -172,6 +172,7 @@ export class HTMLHandler {
         const projectList = Projects.list;
         for (const project of projectList){
             const projectElement = this.createProjectElement(project);
+            projectElement.classList.add("grabbable", "grabbable-blue-border");
             projectContainer.append(projectElement);
         }
     

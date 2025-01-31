@@ -94,6 +94,8 @@ button.edit-todo{
     aspect-ratio: 1/1;
     align-self: end;
     width: 10%;
+    max-width: 2rem;
+    min-width: 1.5rem;
 }
 
 .grabbable:hover{

@@ -1,4 +1,4 @@
-import { Projects } from "./index.js";
+import { ProjectsMethods, ProjectMethods, TodoListMethods } from "./index.js";
 import editTodoIMG from "./media/angle-right.svg";
 import submitTodoIMG from "./media/check.svg";
 import cancelTodoIMG from "./media/cross.svg";
@@ -16,7 +16,7 @@ export class HTMLHandler {
             const projects = LocalStorageHandler.getProjects();
             const project = projects.currentProject;
             if (event.target.classList.contains("project")) {
-                HTMLHandler.createProject(project);
+                this.createProject(project);
             }
         });
         
@@ -40,6 +40,22 @@ export class HTMLHandler {
         `;
 
         return todoElement;
+    }
+
+    static createTodoEditForm = (todo)=>{
+        const todoEditForm = document.createElement("form");
+        todoEditForm.classList.add("todo-edit-form");
+        todoEditForm.dataset.uuid = todo.uuid;
+
+        todoEditForm.innerHTML = `
+        <header class="todo-title"></header>
+        <main class="todo-desc"></main>
+        <div class="todo-due-date"></div>
+        <button class="grabbable logo todo-cancel-button" type="button"> <img src="${cancelTodoIMG}" alt="Cancel"> </button>
+        <button class="grabbable logo todo-submit-button" type="submit"> <img src="${submitTodoIMG}" alt="Submit"> </button>
+        `;
+
+        return todoEditForm;
     }
 
     // updates todoElement with todo data
@@ -130,30 +146,30 @@ export class HTMLHandler {
         if (existingProject) { existingProject.remove(); }
     }
 
-    static onEditTodoClicked = (e)=>{
+    static onEditTodoClicked = (e, projects)=>{
         const todoElement = e.target.closest(".todo");
 
         const projectUUID = todoElement.closest(".project").dataset.uuid;
-        const project = Projects.getProject(projectUUID);
+        const project = ProjectsMethods.getProject(projects, projectUUID);
 
         const todoListUUID = todoElement.closest(".todo-list").dataset.uuid;
-        const todoList = project.getTodoList(todoListUUID);
+        const todoList = ProjectMethods.getTodoList(project, todoListUUID);
 
         const todoUUID = todoElement.dataset.uuid;
-        const todo = todoList.getTodo(todoUUID);
+        const todo = TodoListMethods.getTodo(todoList, todoUUID);
 
-        // display the edit 
+        const todoEditForm = document.createElement("form");
     }
 
-    static projectListenForClicks = (projectElement)=>{
+    static projectElementListenForClicks = (projectElement, projects)=>{
         projectElement.addEventListener("click", (e)=>{
             if (e.target.classList.contains("edit-todo")){
-                this.onEditTodoClicked(e);
+                this.onEditTodoClicked(e, projects);
             }
         });
     }
 
-    static loadProjectToContent = (project)=>{
+    static loadProjectToContent = (project, projects)=>{
         const projectElement = this.createProjectElement(project);
         const todoListsElement = this.createTodoListsElement(project.todoLists, projectElement);
         projectElement.append(todoListsElement);
@@ -163,16 +179,15 @@ export class HTMLHandler {
 
         document.querySelector(".content").append(projectElement);
 
-        this.projectListenForClicks(projectElement);
+        this.projectElementListenForClicks(projectElement, projects);
     }
 
-    static loadProjectListToContent = ()=>{
+    static loadProjectListToContent = (projects)=>{
         const projectContainer = document.createElement("div");
         projectContainer.classList.add("projects-container");
         document.querySelector(".content").append(projectContainer);
-    
-        const projectList = Projects.list;
-        for (const project of projectList){
+
+        for (const project of projects.list){
             const projectElement = this.createProjectElement(project);
             projectElement.classList.add("grabbable", "grabbable-blue-border");
             projectContainer.append(projectElement);
@@ -181,10 +196,10 @@ export class HTMLHandler {
         projectContainer.addEventListener("click", (e)=>{
             if (e.target.classList.contains("project")){
                 // couldve done a map of the project keys but too late, this is where im staring to learn more and more that planning is super important
-                for (const project of Projects.list){
+                for (const project of projects.list){
                     if (e.target.dataset.uuid === project.uuid){
                         this.clearContent();
-                        HTMLHandler.loadProjectToContent(project);
+                        this.loadProjectToContent(project, projects);
                         break;
                     }
                 }

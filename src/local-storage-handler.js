@@ -3,23 +3,24 @@ import { Projects } from "./index.js";
 let reset = true;
 
 export class LocalStorageHandler {
-    static saveProjectData = ()=>{
+    static saveProjectData = (projects)=>{
         localStorage.setItem("projects", JSON.stringify({
-            "list" : Projects.list,
-            "current" : Projects.current,
-            "uuidToProject": Projects.uuidToProject
+            "list" : projects.list,
+            "current" : projects.current,
+            "uuidToProject": projects.uuidToProject
         }));
     }
 
     static loadDefaultProject = ()=>{
-        Projects.init();
-        this.saveProjectData();
+        let projects = new Projects();
+        LocalStorageHandler.saveProjectData(projects);
     }
 
-    static loadProjectData = ()=>{
+    static loadProjectData = (projects)=>{
+        let result = null;
         try {
             if (reset === true){
-                throw new Error("reset === true");
+                throw new Error("reset is true");
             }
             const rawData = localStorage.getItem("projects");
             if (typeof rawData === "undefined"){
@@ -34,22 +35,24 @@ export class LocalStorageHandler {
                 throw new Error("Could not parse projects");
             }
 
-            Projects.list = projectsData.list || [];
-            Projects.current = projectsData.current || null;
-            Projects.uuidToProject = projectsData.uuidToProject || new Map();
-
+            projects.list = projectsData.list || [];
+            projects.current = projectsData.current || null;
+            projects.uuidToProject = projectsData.uuidToProject || new Map();
+            result = true;
         } catch (error) {
             switch (error.message){
                 case "Projects does not exist, creating default project":
-                case "reset === true":
+                case "reset is true":
                     console.log(error);
-                    this.loadDefaultProject();
+                    result = false;
                     break;
                 case "Error getting projects":
                 case "Could not parse projects":
                     console.error(error);
+                    result = null;
                     break;
             }
         }
+        return result;
     }
 }

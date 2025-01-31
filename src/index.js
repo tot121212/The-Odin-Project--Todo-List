@@ -37,6 +37,29 @@ const getObjectFromMapWithUUID = (uuid, map)=>{
     }
 }
 
+export class TodoListMethods {
+    static addTodo(todoList, todo, idx) {
+        todoList.uuidToTodo.set(todo.uuid, todo);
+        if (idx === undefined) {
+            todoList.todos.push(todo);
+        } else {
+            todoList.todos.splice(idx, 0, todo);
+        }
+    }
+
+    static removeTodo(todoList, todo) {
+        todoList.uuidToTodo.delete(uuid);
+        const index = todoList.todos.indexOf(todo);
+        if (index >= 0) {
+            return todoList.todos.splice(index, 1);
+        }
+    }
+
+    static getTodo(todoList, uuid){
+        return getObjectFromMapWithUUID(uuid, todoList.uuidToTodo);
+    }
+}
+
 // multiple of these will exist, creatable by user, you can drag todos between them to transfer them around,
 class TodoList {
     constructor(name) {
@@ -45,26 +68,28 @@ class TodoList {
         this.todos = [];
         this.uuidToTodo = new Map();
     }
+}
 
-    addTodo(todo, idx) {
-        this.uuidToTodo.set(todo.uuid, todo);
+export class ProjectMethods {
+    static addTodoList(project, todoList, idx) {
+        project.uuidToTodoList.set(todoList.uuid, todoList);
         if (idx === undefined) {
-            this.todos.push(todo);
+            project.todoLists.push(todoList);
         } else {
-            this.todos.splice(idx, 0, todo);
+            project.todoLists.splice(idx, 0, todoList);
         }
     }
 
-    removeTodo(todo) {
-        this.uuidToTodo.delete(uuid);
-        const index = this.todos.indexOf(todo);
+    static removeTodoList(project, todoList) {
+        project.uuidToTodoList.delete(uuid);
+        const index = project.todoLists.indexOf(todoList);
         if (index >= 0) {
-            return this.todos.splice(index, 1);
+            return project.todoLists.splice(index, 1);
         }
     }
 
-    getTodo(uuid){
-        return getObjectFromMapWithUUID(uuid, this.uuidToTodo);
+    static getTodoList(project, uuid){
+        return getObjectFromMapWithUUID(uuid, project.uuidToTodoList);
     }
 }
 
@@ -77,79 +102,65 @@ class Project {
         this.todoLists = [];
         this.uuidToTodoList = new Map();
     }
-
-    addTodoList(todoList, idx) {
-        this.uuidToTodoList.set(todoList.uuid, todoList);
-        if (idx === undefined) {
-            this.todoLists.push(todoList);
-        } else {
-            this.todoLists.splice(idx, 0, todoList);
-        }
-    }
-
-    removeTodoList(todoList) {
-        this.uuidToTodoList.delete(uuid);
-        const index = this.todoLists.indexOf(todoList);
-        if (index >= 0) {
-            return this.todoLists.splice(index, 1);
-        }
-    }
-
-    getTodoList(uuid){
-        return getObjectFromMapWithUUID(uuid, this.uuidToTodoList);
-    }
 }
 
-export class Projects {
-    // it is not necessary to load all projects at once but i already started doing it this way so eh, ideally i would get the current from local storage
-    static init(){
-        console.log("Initializing Projects");
-        this.list = [];
-        this.current = null;
-        this.uuidToProject = new Map();
-        this.addDefaultProject();
-    }
-
-    static addProject(project) {
-        this.uuidToProject.set(project.uuid, project);
-        this.list.push(project);
+export class ProjectsMethods{
+    static addProject(projects, project) {
+        projects.uuidToProject.set(project.uuid, project);
+        projects.list.push(project);
         
         console.log(`Project added: `);
         console.log(project);
     }
 
-    static removeProject(project) {
-        this.uuidToProject.delete(project.uuid);
-        const index = this.list.indexOf(project);
+    static removeProject(projects, project) {
+        projects.uuidToProject.delete(project.uuid);
+        const index = projects.list.indexOf(project);
         if (index >= 0) {
-            return this.list.splice(index, 1);
+            return projects.list.splice(index, 1);
         }
     }
 
-    static getProject(uuid){
-        return getObjectFromMapWithUUID(uuid, this.uuidToProject);
+    static getProject(projects, uuid){
+        return getObjectFromMapWithUUID(uuid, projects.uuidToProject);
     }
 
-    static addDefaultProject(){
+    static addDefaultProject(projects){
         const project = new Project("Default", "");
-        project.addTodoList(new TodoList("Tasks"));
-        project.todoLists[0].addTodo(new Todo("Get milk.", "", "1/24/2025", ""));
-        this.addProject(project);
+        ProjectMethods.addTodoList(project, new TodoList("Tasks"));
+        TodoListMethods.addTodo(project.todoLists[0], new Todo("Get milk.", "", "1/24/2025", ""));
+        ProjectsMethods.addProject(projects, project);
+    }
+}
+
+export class Projects {
+    // it is not necessary to load all projects at once but i already started doing it this way so eh, ideally i would get the current from local storage
+    constructor(){
+        this.list = [];
+        this.current = null;
+        this.uuidToProject = new Map();
     }
 }
 
 document.addEventListener("DOMContentLoaded", () => {
-    LocalStorageHandler.loadProjectData();
+    const projects = new Projects();
+    let loadResult = LocalStorageHandler.loadProjectData(projects);
+    if (loadResult === false){
+        ProjectsMethods.addDefaultProject(projects);
+    } else if (loadResult !== true){
+        console.error("Error loading projects");
+        return;
+    }
     console.log("Projects: ");
-    console.log(Projects.list);
+    console.log(projects.list);
     
-    HTMLHandler.loadProjectListToContent();
+    HTMLHandler.loadProjectListToContent(projects);
     
     document.querySelector("nav").addEventListener("click", (e)=>{
         switch (e.target.id){
             case "projects-btn":
                 HTMLHandler.clearContent()
-                HTMLHandler.loadProjectListToContent();
+                HTMLHandler.loadProjectListToContent(projects);
                 break;
         }
     });

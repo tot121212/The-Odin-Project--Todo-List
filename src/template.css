@@ -90,7 +90,7 @@ body > .content{
     gap: 12px;
 }
 
-button.edit-todo{
+.todo-edit-button{
     aspect-ratio: 1/1;
     align-self: end;
     width: 10%;

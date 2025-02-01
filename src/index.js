@@ -5,17 +5,6 @@ import { v4 as uuidv4 } from 'uuid';
 import { LocalStorageHandler } from "./local-storage-handler.js";
 import { HTMLHandler } from "./html-handler.js";
 
-class Todo {
-    constructor(title, description, dueDate, priority) {
-        this.uuid = uuidv4();
-        this.title = title;
-        this.description = description;
-        this.dueDate = dueDate;
-        this.priority = priority;
-        this.checked = false;
-    }
-}
-
 const getObjectFromMapWithUUID = (uuid, map)=>{
     try {
         if (!map.has(uuid)){
@@ -34,6 +23,27 @@ const getObjectFromMapWithUUID = (uuid, map)=>{
     catch (e){
         console.log(e.message);
         return null;
+    }
+}
+
+class Todo {
+    constructor(title, description, dueDate, priority) {
+        this.uuid = uuidv4();
+        this.title = title;
+        this.description = description;
+        this.dueDate = dueDate;
+        this.priority = priority;
+        this.checked = false;
+    }
+}
+
+// multiple of these will exist, creatable by user, you can drag todos between them to transfer them around,
+class TodoList {
+    constructor(name) {
+        this.uuid = uuidv4();
+        this.name = name;
+        this.todos = [];
+        this.uuidToTodo = new Map();
     }
 }
 
@@ -60,13 +70,14 @@ export class TodoListMethods {
     }
 }
 
-// multiple of these will exist, creatable by user, you can drag todos between them to transfer them around,
-class TodoList {
-    constructor(name) {
+// grid of todoLists which will be displayed
+class Project {
+    constructor(name, desc) {
         this.uuid = uuidv4();
         this.name = name;
-        this.todos = [];
-        this.uuidToTodo = new Map();
+        this.description = desc;
+        this.todoLists = [];
+        this.uuidToTodoList = new Map();
     }
 }
 
@@ -93,74 +104,61 @@ export class ProjectMethods {
     }
 }
 
-// grid of todoLists which will be displayed
-class Project {
-    constructor(name, desc) {
-        this.uuid = uuidv4();
-        this.name = name;
-        this.description = desc;
-        this.todoLists = [];
-        this.uuidToTodoList = new Map();
-    }
+export class Projects {
+    // it is not necessary to load all projects at once but i already started doing it this way so eh, ideally i would get the current from local storage
+    static list = [];
+    static current = null;
+    static uuidToProject = new Map();
 }
 
 export class ProjectsMethods{
-    static addProject(projects, project) {
-        projects.uuidToProject.set(project.uuid, project);
-        projects.list.push(project);
+    // add project to projects
+    static addProject(project) {
+        Projects.uuidToProject.set(project.uuid, project);
+        Projects.list.push(project);
         
         console.log(`Project added: `);
         console.log(project);
     }
 
-    static removeProject(projects, project) {
-        projects.uuidToProject.delete(project.uuid);
-        const index = projects.list.indexOf(project);
+    static removeProject(project) {
+        Projects.uuidToProject.delete(project.uuid);
+        const index = Projects.list.indexOf(project);
         if (index >= 0) {
-            return projects.list.splice(index, 1);
+            return Projects.list.splice(index, 1);
         }
     }
 
-    static getProject(projects, uuid){
-        return getObjectFromMapWithUUID(uuid, projects.uuidToProject);
+    static getProject(uuid){
+        return getObjectFromMapWithUUID(uuid, Projects.uuidToProject);
     }
 
-    static addDefaultProject(projects){
+    static addDefaultProject(){
         const project = new Project("Default", "");
         ProjectMethods.addTodoList(project, new TodoList("Tasks"));
         TodoListMethods.addTodo(project.todoLists[0], new Todo("Get milk.", "", "1/24/2025", ""));
-        ProjectsMethods.addProject(projects, project);
-    }
-}
-
-export class Projects {
-    // it is not necessary to load all projects at once but i already started doing it this way so eh, ideally i would get the current from local storage
-    constructor(){
-        this.list = [];
-        this.current = null;
-        this.uuidToProject = new Map();
+        ProjectsMethods.addProject(project);
     }
 }
 
 document.addEventListener("DOMContentLoaded", () => {
-    const projects = new Projects();
-    let loadResult = LocalStorageHandler.loadProjectData(projects);
+    let loadResult = LocalStorageHandler.loadProjectData();
     if (loadResult === false){
-        ProjectsMethods.addDefaultProject(projects);
+        ProjectsMethods.addDefaultProject();
     } else if (loadResult !== true){
         console.error("Error loading projects");
         return;
     }
     console.log("Projects: ");
-    console.log(projects.list);
+    console.log(Projects.list);
     
-    HTMLHandler.loadProjectListToContent(projects);
+    HTMLHandler.loadProjectListToContent();
     
     document.querySelector("nav").addEventListener("click", (e)=>{
         switch (e.target.id){
             case "projects-btn":
                 HTMLHandler.clearContent()
-                HTMLHandler.loadProjectListToContent(projects);
+                HTMLHandler.loadProjectListToContent(MyProjects);
                 break;
         }
     });

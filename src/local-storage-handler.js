@@ -3,20 +3,15 @@ import { Projects } from "./index.js";
 let reset = true;
 
 export class LocalStorageHandler {
-    static saveProjectData = (projects)=>{
+    static saveProjectData = ()=>{
         localStorage.setItem("projects", JSON.stringify({
-            "list" : projects.list,
-            "current" : projects.current,
-            "uuidToProject": projects.uuidToProject
+            "list" : Projects.list,
+            "current" : Projects.current,
+            "uuidToProject": Projects.uuidToProject
         }));
     }
 
-    static loadDefaultProject = ()=>{
-        let projects = new Projects();
-        LocalStorageHandler.saveProjectData(projects);
-    }
-
-    static loadProjectData = (projects)=>{
+    static loadProjectData = ()=>{
         let result = null;
         try {
             if (reset === true){
@@ -35,9 +30,9 @@ export class LocalStorageHandler {
                 throw new Error("Could not parse projects");
             }
 
-            projects.list = projectsData.list || [];
-            projects.current = projectsData.current || null;
-            projects.uuidToProject = projectsData.uuidToProject || new Map();
+            Projects.list = projectsData.list || [];
+            Projects.current = projectsData.current || null;
+            Projects.uuidToProject = projectsData.uuidToProject || new Map();
             result = true;
         } catch (error) {
             switch (error.message){
@@ -51,6 +46,8 @@ export class LocalStorageHandler {
                     console.error(error);
                     result = null;
                     break;
+                default:
+                    result = null;
             }
         }
         return result;

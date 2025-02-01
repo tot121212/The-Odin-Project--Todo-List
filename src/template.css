@@ -90,7 +90,7 @@ body > .content{
     gap: 12px;
 }
 
-.todo-edit-button{
+.todo-edit-button, .todo-cancel-button, .todo-submit-button{
     aspect-ratio: 1/1;
     align-self: end;
     width: 10%;
@@ -109,4 +109,36 @@ body > .content{
 .grabbable > * {
     position: relative;
     z-index: -1;
+}
+
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.modal > *{
+    position: absolute;
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    max-width: 500px;
+    width: 80%;
+    z-index: 1001;
+
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.modal button{
+    align-self: flex-end;
 }

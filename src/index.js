@@ -26,7 +26,7 @@ const getObjectFromMapWithUUID = (uuid, map)=>{
     }
 }
 
-class Todo {
+export class Todo {
     constructor(title, description, dueDate, priority) {
         this.uuid = uuidv4();
         this.title = title;
@@ -136,7 +136,7 @@ export class ProjectsMethods{
     static addDefaultProject(){
         const project = new Project("Default", "");
         ProjectMethods.addTodoList(project, new TodoList("Tasks"));
-        TodoListMethods.addTodo(project.todoLists[0], new Todo("Get milk.", "", "1/24/2025", ""));
+        TodoListMethods.addTodo(project.todoLists[0], new Todo("Get milk.", "", "2025-01-31", "High"));
         ProjectsMethods.addProject(project);
     }
 }
@@ -158,7 +158,7 @@ document.addEventListener("DOMContentLoaded", () => {
         switch (e.target.id){
             case "projects-btn":
                 HTMLHandler.clearContent()
-                HTMLHandler.loadProjectListToContent(MyProjects);
+                HTMLHandler.loadProjectListToContent();
                 break;
         }
     });

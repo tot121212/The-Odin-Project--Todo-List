@@ -1,4 +1,5 @@
-import { Projects, ProjectsMethods, ProjectMethods, TodoListMethods } from "./index.js";
+import { Projects, Todo, ProjectsMethods, ProjectMethods, TodoListMethods } from "./index.js";
+import { LocalStorageHandler } from "./local-storage-handler.js";
 import editTodoIMG from "./media/angle-right.svg";
 import submitTodoIMG from "./media/check.svg";
 import cancelTodoIMG from "./media/cross.svg";
@@ -26,6 +27,26 @@ export class HTMLHandler {
         document.querySelector(".content").innerHTML = "";
     }
 
+    static getTodoFromTodoElement(todoElement){
+        try {
+            let todo;
+            const projectUUID = todoElement.closest(".project").dataset.uuid;
+            const project = ProjectsMethods.getProject(projectUUID);
+    
+            const todoListUUID = todoElement.closest(".todo-list").dataset.uuid;
+            const todoList = ProjectMethods.getTodoList(project, todoListUUID);
+    
+            const todoUUID = todoElement.dataset.uuid;
+            todo = TodoListMethods.getTodo(todoList, todoUUID);
+            if (!(todo instanceof Todo)){
+                throw new Error("Todo not found");
+            }
+            return todo;
+        } catch (error) {
+            return null;
+        }
+    }
+
     // creates html element for todo
     static createTodoElement = (todo)=>{
         const todoElement = document.createElement("div");
@@ -36,27 +57,11 @@ export class HTMLHandler {
         <header class="todo-title"></header>
         <main class="todo-desc"></main>
         <div class="todo-due-date"></div>
+        <div class="todo-priority"></div>
+        <div class="todo-checked"></div>
         `;
 
         return todoElement;
-    }
-
-    static addEditButtonToTodoElement = (todoElement)=>{
-        todoElement.innerHTML += `
-        <button class="grabbable logo todo-edit-button" type="button"><object data="${editTodoIMG}" type="image/svg+xml" alt="Edit Todo"></object></button>
-        `;
-    }
-
-    static addCancelButtonToTodoElement = (todoElement)=>{
-        todoElement.innerHTML += `
-        <button class="grabbable logo todo-cancel-button" type="button"> <img src="${cancelTodoIMG}" alt="Cancel"> </button>
-        `;
-    }
-
-    static addSubmitButtonToTodoElement = (todoElement)=>{
-        todoElement.innerHTML += `
-        <button class="grabbable logo todo-submit-button" type="submit"> <img src="${submitTodoIMG}" alt="Submit"> </button>
-        `;
     }
 
     // updates todoElement with todo data
@@ -69,6 +74,30 @@ export class HTMLHandler {
 
         const todoDueDateElement = todoElement.querySelector(".todo-due-date");
         todoDueDateElement.textContent = todo.dueDate;
+
+        const todoPriority = todoElement.querySelector(".todo-priority");
+        todoPriority.textContent = todo.priority;
+
+        const todoChecked = todoElement.querySelector(".todo-checked");
+        todoChecked.textContent = todo.checked;
+    }
+
+    static addEditButtonToTodoElement = (todoElement)=>{
+        todoElement.innerHTML += `
+        <button class="grabbable logo todo-edit-button" type="button"><object data="${editTodoIMG}" type="image/svg+xml" alt="Edit Todo"></object></button>
+        `;
+    }
+
+    static addCancelButtonToTodoElement = (todoElement)=>{
+        todoElement.innerHTML += `
+        <button class="grabbable logo todo-cancel-button" type="button"> <object data="${cancelTodoIMG}" type="image/svg+xml" alt="Cancel Todo"> </button>
+        `;
+    }
+
+    static addSubmitButtonToTodoElement = (todoElement)=>{
+        todoElement.innerHTML += `
+        <button class="grabbable logo todo-submit-button" type="submit"> <object data="${submitTodoIMG}" type="image/svg+xml" alt="Submit Todo"> </button>
+        `;
     }
 
     // list element that contains todos
@@ -148,25 +177,11 @@ export class HTMLHandler {
         if (existingProject) { existingProject.remove(); }
     }
 
-    static onEditTodoClicked = (e)=>{
-        const todoElement = e.target.closest(".todo");
-
-        const projectUUID = todoElement.closest(".project").dataset.uuid;
-        const project = ProjectsMethods.getProject(projectUUID);
-
-        const todoListUUID = todoElement.closest(".todo-list").dataset.uuid;
-        const todoList = ProjectMethods.getTodoList(project, todoListUUID);
-
-        const todoUUID = todoElement.dataset.uuid;
-        const todo = TodoListMethods.getTodo(todoList, todoUUID);
-
-        // update modal element with todo information
-    }
-
     static projectElementListenForClicks = (projectElement)=>{
         projectElement.addEventListener("click", (e)=>{
             if (e.target.classList.contains("todo-edit-button")){
-                this.onEditTodoClicked(e);
+                const newModal = this.Modal.createFromEvent(e);
+                document.body.append(newModal);
             }
         });
     }
@@ -197,13 +212,11 @@ export class HTMLHandler {
     
         projectContainer.addEventListener("click", (e)=>{
             if (e.target.classList.contains("project")){
+                let project = Projects.uuidToProject.get(e.target.dataset.uuid);
                 // couldve done a map of the project keys but too late, this is where im staring to learn more and more that planning is super important
-                for (const project of Projects.list){
-                    if (e.target.dataset.uuid === project.uuid){
-                        this.clearContent();
-                        this.loadProjectToContent(project);
-                        break;
-                    }
+                if (project){
+                    this.clearContent();
+                    this.loadProjectToContent(project);
                 }
             }
         });
@@ -215,59 +228,125 @@ export class HTMLHandler {
     // bc when we delete elements it removes the listener it is useful to do it that way but less performant but that doesnt really matter right now
     // therefore, we are going to replace the entire modal
     static Modal = class {
-        static create = (type) => {
+        static clearModal = (modal)=>{
+            modal.innerHTML = "";
+        }
+        
+        static createFromEvent = (e) => {
+            // need to add modal element on start page
             const modal = document.createElement("div");
             modal.classList.add("modal");
-            
-            switch (type){
-                case "todo":
+            console.log("Event Target:");
+            console.log(e.target);
+            switch (true){
+                case (e.target.classList.contains("todo-edit-button")):
+                    console.log("Todo Edit Button Pressed");
+                    //get todo with uuid
+                    const todoElement = e.target.closest(".todo");
+                    const todo = HTMLHandler.getTodoFromTodoElement(todoElement);
+                    console.log(todo);
+                    if (!todo){
+                        throw new Error("Todo not found");
+                    }
+
                     const todoEditForm = document.createElement("form");
                     todoEditForm.classList.add("todo-edit-modal");
                     todoEditForm.dataset.uuid = todo.uuid;
                     
                     todoEditForm.innerHTML = `
-                    <header class="todo-title"></header>
-                    <main class="todo-desc"></main>
-                    <div class="todo-due-date"></div>
+                    <label for="title">Title: 
+                        <input type="text" class="todo-title" name="title" value="${todo.title}">
+                    </label>
+                    
+                    <label>Description: 
+                        <input type="text" class="todo-desc" name="description" value="${todo.description}">
+                    </label>
+                    
+                    <label>Date: 
+                        <input type="date" class="todo-due-date" name="dueDate" value="${todo.dueDate}">
+                    </label>
+                    
+                    <label>Priority: 
+                        <input type="text" class="todo-priority" name="priority" value="${todo.priority}">
+                    </label>
+                    
+                    <label>Finished:
+                        <input type="checkbox" class="todo-checked" name="checked" value="${todo.checked}">
+                    </label>
                     `;
 
-                    this.addCancelButtonToTodoElement(todoEditForm);
-                    this.addSubmitButtonToTodoElement(todoEditForm);
-
+                    HTMLHandler.addCancelButtonToTodoElement(todoEditForm);
+                    HTMLHandler.addSubmitButtonToTodoElement(todoEditForm);
+                    
                     modal.append(todoEditForm);
-
+                    console.log(modal);
+                    
                     todoEditForm.addEventListener("click", (e)=>{
                         if (e.target.classList.contains("todo-cancel-button")){
-                            modal.innerHTML = "";
-                            // or hide it
+                            clearModal(modal);
                         }
                     });
+
                     todoEditForm.addEventListener("submit", (e)=>{
+                        e.preventDefault();
                         if (e.target.classList.contains("todo-submit-button")){
-                            e.preventDefault();
                             // get data from form
                             const formData = new FormData(e.target);
-                            //get todo with uuid
-                            const todoUUID = e.target.dataset.id;
-                            const todoListUUID = e.target.closest(".todo-list").dataset.id;
-                            const projectUUID = e.target.closest(".project").dataset.id;
-                            // const todo = 
-                            // update todo data
-                            // for (const [k,v] in formData.entries()){
-                            //     if (k in todo){
-                            //         return true;
-                            //     }
-                            // }
+                            for (const [k,v] in formData.entries()){
+                                if (todo.hasOwnProperty(k)){
+                                    switch (k){
+                                        case "title":
+                                            if (typeof v !== "string"){
+                                                throw new Error("Title must be a string");
+                                            }
+                                            break;
+                                        case "description":
+                                            if (typeof v !== "string"){
+                                                throw new Error("Description must be a string");
+                                            }
+                                            break;
+                                        case "dueDate":
+                                            if (typeof v !== "string"){
+                                                throw new Error("Due date must be a string");
+                                            }
+                                            break;
+                                        case "priority":
+                                            if (typeof v !== "string"){
+                                                throw new Error("Priority must be a string");
+                                            }
+                                            break;
+                                        case "checked":
+                                            if (typeof v !== "boolean"){
+                                                throw new Error("Checked must be a boolean");
+                                            }
+                                            break;
+                                        default:
+                                            throw new Error("Property is not modifiable");
+                                    }
+                                    todo[k] = v;
+                                }
+                                else {
+                                    throw new Error("Invalid property");
+                                }
+                            }
                             // save with storage handler, currently would just be saving the entire project
-                            // add listener to new todo
-                            // close modal
-                            // update todo element on page
+                            LocalStorageHandler.saveProjectData();
+                            // update existing todo element in particular
+                            const todoElement = document.querySelector(`.todo[data-uuid=${todo.uuid}]`);
+                            if (!(todoElement instanceof Element)){
+                                // refresh page
+                                // return
+                                throw new Error("Todo element not found on page");
+                            }
+                            else{
+                                HTMLHandler.updateTodoElement(todo, todoElement);
+                            }
                         }
+                        e.target.closest(".modal").hidden = true;
                     });
-
                     break;
             }
-
+            
             return modal;
         }
     }

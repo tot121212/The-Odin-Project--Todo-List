@@ -17,7 +17,6 @@ const getObjectFromMapWithUUID = (uuid, map)=>{
         //console.log(`Object of: map, uuid, found: `);
         //console.log(map);
         //console.log(uuid);
-        console.log(object);
         return object;
     }
     catch (e){
@@ -38,7 +37,7 @@ export class Todo {
 }
 
 // multiple of these will exist, creatable by user, you can drag todos between them to transfer them around,
-class TodoList {
+export class TodoList {
     constructor(name) {
         this.uuid = uuidv4();
         this.name = name;
@@ -68,10 +67,17 @@ export class TodoListMethods {
     static getTodo(todoList, uuid){
         return getObjectFromMapWithUUID(uuid, todoList.uuidToTodo);
     }
+
+    static rebuildTodosMap = (todoList)=>{
+        todoList.uuidToTodo = new Map();
+        todoList.todos.forEach(todo => {
+            todoList.uuidToTodo.set(todo.uuid, todo);
+        });
+    }
 }
 
 // grid of todoLists which will be displayed
-class Project {
+export class Project {
     constructor(name, desc) {
         this.uuid = uuidv4();
         this.name = name;
@@ -102,12 +108,19 @@ export class ProjectMethods {
     static getTodoList(project, uuid){
         return getObjectFromMapWithUUID(uuid, project.uuidToTodoList);
     }
+    
+    static rebuildTodoListsMap = (project)=>{
+        project.uuidToTodoList = new Map();
+        project.todoLists.forEach(todoList => {
+            project.uuidToTodoList.set(todoList.uuid, todoList);
+        });
+    }
 }
 
 export class Projects {
     // it is not necessary to load all projects at once but i already started doing it this way so eh, ideally i would get the current from local storage
     static list = [];
-    static current = null;
+    static current = null; // could just store this as a uuid of a list project
     static uuidToProject = new Map();
 }
 
@@ -139,19 +152,27 @@ export class ProjectsMethods{
         TodoListMethods.addTodo(project.todoLists[0], new Todo("Get milk.", "", "2025-01-31", "High"));
         ProjectsMethods.addProject(project);
     }
+
+    static rebuildProjectsMap = ()=>{
+        Projects.uuidToProject = new Map();
+        Projects.list.forEach(project => {
+            Projects.uuidToProject.set(project.uuid, project);
+        });
+    }
+
+    static rebuildAllMaps = ()=>{
+        ProjectsMethods.rebuildProjectsMap();
+        for (const project of Projects.list){
+            ProjectMethods.rebuildTodoListsMap(project);
+            for (const todoList of project.todoLists){
+                TodoListMethods.rebuildTodosMap(todoList);
+            }
+        }
+    }
 }
 
 document.addEventListener("DOMContentLoaded", () => {
-    let loadResult = LocalStorageHandler.loadProjectData();
-    if (loadResult === false){
-        ProjectsMethods.addDefaultProject();
-    } else if (loadResult !== true){
-        console.error("Error loading projects");
-        return;
-    }
-    console.log("Projects: ");
-    console.log(Projects.list);
-    
+    LocalStorageHandler.loadProjectData();
     HTMLHandler.loadProjectListToContent();
     
     document.querySelector("nav").addEventListener("click", (e)=>{

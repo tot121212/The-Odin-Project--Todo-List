@@ -1,10 +1,12 @@
-import { Projects, Todo, ProjectsMethods, ProjectMethods, TodoListMethods } from "./index.js";
+import { Projects, Project, TodoList, Todo } from "./index.js";
+import { ProjectsMethods, ProjectMethods, TodoListMethods } from "./index.js";
+
 import { LocalStorageHandler } from "./local-storage-handler.js";
 import editTodoIMG from "./media/angle-right.svg";
 import submitTodoIMG from "./media/check.svg";
 import cancelTodoIMG from "./media/cross.svg";
 
-
+// DAMN YOU JAVASCRIPT *SHAKES FIST*, shouldve just used sql but :shrug:
 export class HTMLHandler {
     // need to be able to move elements around, delete them, edit them, all whilst said elements are saved correctly...
     // easiest way would be give each dom element a uuid and just find that specific element via data-id but thats annoying
@@ -30,20 +32,33 @@ export class HTMLHandler {
     static getTodoFromTodoElement(todoElement){
         try {
             let todo;
-            const projectUUID = todoElement.closest(".project").dataset.uuid;
+
+            const projectElement = todoElement.closest(".project");
+            const projectUUID = projectElement.dataset.uuid;
             const project = ProjectsMethods.getProject(projectUUID);
+            console.log("Project of todo: ", project);
+            if (!(project.hasOwnProperty("uuid"))){
+                throw new Error("Project not found");
+            }
     
-            const todoListUUID = todoElement.closest(".todo-list").dataset.uuid;
+            const todoListElement = todoElement.closest(".todo-list");
+            const todoListUUID = todoListElement.dataset.uuid;
             const todoList = ProjectMethods.getTodoList(project, todoListUUID);
-    
+            console.log("todoList of todo: ", todoList);
+            if (!(todoList instanceof TodoList)){
+                throw new Error("TodoList not found");
+            }
+            
             const todoUUID = todoElement.dataset.uuid;
             todo = TodoListMethods.getTodo(todoList, todoUUID);
+            console.log("todo: ", todo);
             if (!(todo instanceof Todo)){
                 throw new Error("Todo not found");
             }
+
             return todo;
         } catch (error) {
-            return null;
+            console.error(error);
         }
     }
 
@@ -229,7 +244,7 @@ export class HTMLHandler {
     // therefore, we are going to replace the entire modal
     static Modal = class {
         static clearModal = (modal)=>{
-            modal.innerHTML = "";
+            modal.remove()
         }
         
         static createFromEvent = (e) => {
@@ -243,6 +258,7 @@ export class HTMLHandler {
                     console.log("Todo Edit Button Pressed");
                     //get todo with uuid
                     const todoElement = e.target.closest(".todo");
+                    console.log("Todo Element:", todoElement);
                     const todo = HTMLHandler.getTodoFromTodoElement(todoElement);
                     console.log(todo);
                     if (!todo){
@@ -283,7 +299,7 @@ export class HTMLHandler {
                     
                     todoEditForm.addEventListener("click", (e)=>{
                         if (e.target.classList.contains("todo-cancel-button")){
-                            clearModal(modal);
+                            this.clearModal(modal);
                         }
                     });
 
@@ -342,11 +358,9 @@ export class HTMLHandler {
                                 HTMLHandler.updateTodoElement(todo, todoElement);
                             }
                         }
-                        e.target.closest(".modal").hidden = true;
                     });
                     break;
             }
-            
             return modal;
         }
     }

@@ -48,6 +48,7 @@ body > .content{
     align-items: center;
 
     border: 1px solid black;
+    border-radius: 8px;
 
     gap: 4px;
     padding: 12px;

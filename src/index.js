@@ -27,6 +27,7 @@ const getObjectFromMapWithUUID = (uuid, map)=>{
 
 export class Todo {
     constructor(title, description, dueDate, priority) {
+        this._class = this.constructor.name;
         this.uuid = uuidv4();
         this.title = title;
         this.description = description;
@@ -34,17 +35,26 @@ export class Todo {
         this.priority = priority;
         this.checked = false;
     }
+    static defaultArgs(){
+        return ["Task", "", "2025-01-01", "Normal"];
+    }
 }
+globalThis.Todo = Todo;
 
 // multiple of these will exist, creatable by user, you can drag todos between them to transfer them around,
 export class TodoList {
     constructor(name) {
+        this._class = this.constructor.name;
         this.uuid = uuidv4();
         this.name = name;
         this.todos = [];
         this.uuidToTodo = new Map();
     }
+    static defaultArgs(){
+        return ["Tasks"];
+    }
 }
+globalThis.TodoList = TodoList;
 
 export class TodoListMethods {
     static addTodo(todoList, todo, idx) {
@@ -79,13 +89,18 @@ export class TodoListMethods {
 // grid of todoLists which will be displayed
 export class Project {
     constructor(name, desc) {
+        this._class = this.constructor.name;
         this.uuid = uuidv4();
         this.name = name;
         this.description = desc;
         this.todoLists = [];
         this.uuidToTodoList = new Map();
     }
+    static defaultArgs(){
+        return ["Untitled", ""];
+    }
 }
+globalThis.Project = Project;
 
 export class ProjectMethods {
     static addTodoList(project, todoList, idx) {
@@ -123,6 +138,7 @@ export class Projects {
     static current = null; // could just store this as a uuid of a list project
     static uuidToProject = new Map();
 }
+globalThis.Projects = Projects;
 
 export class ProjectsMethods{
     // add project to projects
@@ -172,6 +188,7 @@ export class ProjectsMethods{
 }
 
 document.addEventListener("DOMContentLoaded", () => {
+    console.log("globalThis:",globalThis);
     LocalStorageHandler.loadProjectData();
     HTMLHandler.loadProjectListToContent();
     

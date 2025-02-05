@@ -1,25 +1,26 @@
-import { Projects, ProjectsMethods } from "./index.js";
+import { Projects, Project, TodoList, Todo } from "./index.js";
+import { ProjectsMethods } from "./index.js";
 
 export class LocalStorageHandler {
     // we do a little recursion fr
-    static nestedMapToObject(map){
-        const object = {};
-        for (const [key,value] of map){
-            object[key]  = value instanceof Map ? this.mapToJson(value) : value;
-        }
-        return object;
-    }
+    // static nestedMapToObject(map){
+    //     const object = {};
+    //     for (const [key,value] of map){
+    //         object[key]  = value instanceof Map ? this.nestedMapToObject(value) : value;
+    //     }
+    //     return object;
+    // }
 
-    static objectToNestedMap(object){
-        if (object !== null && typeof object === "object"){
-            const map = new Map();
-            for (const [key, value] of Object.entries(object)){
-                map.set(key, this.objectToNestedMap(value));
-            }
-            return map;
-        }
-        return object;
-    }
+    // static objectToNestedMap(object){
+    //     if (object !== null && typeof object === "object"){
+    //         const map = new Map();
+    //         for (const [key, value] of Object.entries(object)){
+    //             map.set(key, this.objectToNestedMap(value));
+    //         }
+    //         return map;
+    //     }
+    //     return object;
+    // }
 
     static resetDatabase = ()=>{
         localStorage.removeItem("projects");
@@ -27,35 +28,41 @@ export class LocalStorageHandler {
     }
 
     static saveProjectData = ()=>{
-        const save_data_obj = {
+        const saveDataObj = {
             "list" : Projects.list,
             "current" : Projects.current,
         }
-        console.log("Save Data before Jsonificaiton", save_data_obj)
+        console.log("Save Data before Jsonificaiton", saveDataObj)
 
-        const jsonified_projects = JSON.stringify(save_data_obj);
-        localStorage.setItem("projects", jsonified_projects);
-        console.log("Jsonified Save Data:", jsonified_projects);
+        const jsonifiedProjects = JSON.stringify(saveDataObj);
+        localStorage.setItem("projects", jsonifiedProjects);
+        console.log("Jsonified Save Data:", jsonifiedProjects);
     }
 
     static loadProjectData = ()=>{
         let result = null;
 
         try {
-            const jsonified_projects = localStorage.getItem("projects");
-            if (jsonified_projects === null){
+            const jsonifiedProjects = localStorage.getItem("projects");
+            if (jsonifiedProjects === null){
                 throw new Error("Projects does not exist, creating default project");
             }
     
-            const projectsData = JSON.parse(jsonified_projects);
-            if (!projectsData || typeof projectsData !== "object"){
+            const parsedProjects = JSON.parse(jsonifiedProjects);
+            if (!parsedProjects || typeof parsedProjects !== "object"){
                 throw new Error("Could not parse projects");
             }
-            console.log("UnJsonified Load Data:", projectsData);
+            console.log("UnJsonified Load Data:", parsedProjects);
             
-            Projects.list = projectsData.list ?? [];
-            Projects.current = projectsData.current ?? null;
+            // const mappedProjects = this.objectToNestedMap(parsedProjects);
+
+            // const revivedProjects = this.reviveObject(mappedProjects);
+            const revivedProjects = this.reviveObjectRecursively(parsedProjects);
+
+            Projects.list = revivedProjects.list ?? [];
+            Projects.current = revivedProjects.current ?? null;
             ProjectsMethods.rebuildAllMaps();
+
             result = true;
 
         } catch (error) {
@@ -83,9 +90,31 @@ export class LocalStorageHandler {
             return;
         }
         
-        console.log("Projects: ");
-        console.log(Projects.list);
-        console.log(Projects.current);
-        console.log(Projects.uuidToProject);
+        console.log("Projects:");
+        console.log("List:",Projects.list);
+        console.log("Current:",Projects.current);
+        console.log("UUIDToProjectMap:",Projects.uuidToProject);
     }
+    
+    static reviveObjectRecursively(obj) {
+        if (obj && typeof obj === "object") {
+            if ("_class" in obj) {
+                const ClassRef = globalThis[obj._class];
+    
+                if (typeof ClassRef === "function") {
+                    Object.setPrototypeOf(obj, ClassRef.prototype);
+                } else {
+                    throw new Error("Class not found: " + obj._class);
+                }
+            }
+    
+            for (const key in obj) {
+                if (typeof obj[key] === "object") {
+                    obj[key] = this.reviveObject(obj[key]);
+                }
+            }
+        }
+        return obj;
+    }
+    
 }

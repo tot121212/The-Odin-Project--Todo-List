@@ -58,6 +58,7 @@ export class LocalStorageHandler {
 
             // const revivedProjects = this.reviveObject(mappedProjects);
             const revivedProjects = this.reviveObjectRecursively(parsedProjects);
+            console.log("Revived Projects:",revivedProjects);
 
             Projects.list = revivedProjects.list ?? [];
             Projects.current = revivedProjects.current ?? null;
@@ -90,10 +91,7 @@ export class LocalStorageHandler {
             return;
         }
         
-        console.log("Projects:");
-        console.log("List:",Projects.list);
-        console.log("Current:",Projects.current);
-        console.log("UUIDToProjectMap:",Projects.uuidToProject);
+        console.log("Loaded Projects:", Object.entries(Projects));
     }
     
     static reviveObjectRecursively(obj) {
@@ -110,7 +108,7 @@ export class LocalStorageHandler {
     
             for (const key in obj) {
                 if (typeof obj[key] === "object") {
-                    obj[key] = this.reviveObject(obj[key]);
+                    obj[key] = this.reviveObjectRecursively(obj[key]);
                 }
             }
         }

@@ -287,7 +287,7 @@ export class HTMLHandler {
                     </label>
                     
                     <label>Finished:
-                        <input type="checkbox" class="todo-checked" name="checked" value="${todo.checked}">
+                        <input type="checkbox" class="todo-checked" name="checked" ${todo.checked ? "checked" : ""}}>
                     </label>
                     `;
 
@@ -316,6 +316,7 @@ export class HTMLHandler {
 
                             console.log("Form Entries:", formEntries);
                             // Verify form data and change todo directly
+                            let finishedIsChecked = false;
                             while (true){
                                 let nxt = formEntries.next();
                                 console.log("Next:", nxt);
@@ -336,13 +337,20 @@ export class HTMLHandler {
                                             if (typeof v !== "string") {
                                                 throw new Error(`${k} must be a string`);
                                             }
-                                            todo[k] = (v === "true");
+                                            if (v === "on"){
+                                                todo[k] = true;
+                                                finishedIsChecked = true;
+                                            }
                                             break;
                                         default:
                                             throw new Error("Property is not modifiable");
                                     }
                                 } else {
                                     throw new Error("Invalid property");
+                                }
+                                if (!finishedIsChecked){
+                                    // case for if unchecked because FormData doesnt get unchecked forms for some dumb reason...
+                                    todo.checked = false;
                                 }
                             }
 

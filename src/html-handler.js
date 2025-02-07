@@ -303,60 +303,58 @@ export class HTMLHandler {
                         }
                     });
 
-                    todoEditForm.addEventListener("submit", (e)=>{
+                    // Add listener for the submit of changing the todo information
+                    todoEditForm.addEventListener("submit", async (e)=>{
                         e.preventDefault();
-                        if (e.target.classList.contains("todo-submit-button")){
-                            // get data from form
-                            const formData = new FormData(e.target);
-                            for (const [k,v] in formData.entries()){
+
+                        if (e.submitter && e.submitter.classList.contains("todo-submit-button")){
+
+                            console.log("Submit Button Pressed");
+                            
+                            const formData = new FormData(todoEditForm);
+                            const formEntries = formData.entries();
+
+                            console.log("Form Entries:", formEntries);
+                            // Verify form data and change todo directly
+                            while (true){
+                                let nxt = formEntries.next();
+                                console.log("Next:", nxt);
+                                if (nxt.done) break;
+                                let [k,v] = nxt.value;
                                 if (todo.hasOwnProperty(k)){
                                     switch (k){
                                         case "title":
-                                            if (typeof v !== "string"){
-                                                throw new Error("Title must be a string");
-                                            }
-                                            break;
                                         case "description":
-                                            if (typeof v !== "string"){
-                                                throw new Error("Description must be a string");
-                                            }
-                                            break;
                                         case "dueDate":
-                                            if (typeof v !== "string"){
-                                                throw new Error("Due date must be a string");
-                                            }
-                                            break;
                                         case "priority":
-                                            if (typeof v !== "string"){
-                                                throw new Error("Priority must be a string");
+                                            if (typeof v !== "string") {
+                                                throw new Error(`${k} must be a string`);
                                             }
+                                            todo[k] = v;
                                             break;
                                         case "checked":
-                                            if (typeof v !== "boolean"){
-                                                throw new Error("Checked must be a boolean");
+                                            if (typeof v !== "string") {
+                                                throw new Error(`${k} must be a string`);
                                             }
+                                            todo[k] = (v === "true");
                                             break;
                                         default:
                                             throw new Error("Property is not modifiable");
                                     }
-                                    todo[k] = v;
-                                }
-                                else {
+                                } else {
                                     throw new Error("Invalid property");
                                 }
                             }
+
                             // save with storage handler, currently would just be saving the entire project
                             LocalStorageHandler.saveProjectData();
-                            // update existing todo element in particular
-                            const todoElement = document.querySelector(`.todo[data-uuid=${todo.uuid}]`);
-                            if (!(todoElement instanceof Element)){
-                                // refresh page
-                                // return
+
+                            const todoElement = document.querySelector(`.todo[data-uuid="${todo.uuid}"]`);
+                            if (!(todoElement instanceof Element)) {
                                 throw new Error("Todo element not found on page");
                             }
-                            else{
-                                HTMLHandler.updateTodoElement(todo, todoElement);
-                            }
+                        
+                            HTMLHandler.updateTodoElement(todo, todoElement);
                         }
                     });
                     break;

@@ -57,6 +57,7 @@ export class TodoList {
 globalThis.TodoList = TodoList;
 
 export class TodoListMethods {
+    //Call with or without idx to specify insertion location
     static addTodo(todoList, todo, idx) {
         todoList.uuidToTodo.set(todo.uuid, todo);
         if (idx === undefined) {
@@ -67,8 +68,11 @@ export class TodoListMethods {
     }
 
     static removeTodo(todoList, todo) {
-        todoList.uuidToTodo.delete(uuid);
+        todoList.uuidToTodo.delete(todo.uuid);
         const index = todoList.todos.indexOf(todo);
+        if (!(typeof index === "number")){
+            throw new Error(`Todo not found in todoList`);
+        }
         if (index >= 0) {
             return todoList.todos.splice(index, 1);
         }
@@ -113,7 +117,7 @@ export class ProjectMethods {
     }
 
     static removeTodoList(project, todoList) {
-        project.uuidToTodoList.delete(uuid);
+        project.uuidToTodoList.delete(todoList.uuid);
         const index = project.todoLists.indexOf(todoList);
         if (index >= 0) {
             return project.todoLists.splice(index, 1);

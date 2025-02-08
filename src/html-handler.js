@@ -464,25 +464,11 @@ export class HTMLHandler {
                     todoEditForm.dataset.uuid = todo.uuid;
                     
                     todoEditForm.innerHTML = `
-                    <label for="title">Title: 
-                        <input type="text" class="todo-title" name="title" value="${todo.title}">
-                    </label>
-                    
-                    <label>Description: 
-                        <input type="text" class="todo-desc" name="description" value="${todo.description}">
-                    </label>
-                    
-                    <label>Date: 
+                        <input type="text" class="todo-title" name="title" placeholder="Title" value="${todo.title}">
+                        <input type="text" class="todo-desc" name="description" placeholder="Description" value="${todo.description}">
                         <input type="date" class="todo-due-date" name="dueDate" value="${todo.dueDate}">
-                    </label>
-                    
-                    <label>Priority: 
-                        <input type="text" class="todo-priority" name="priority" value="${todo.priority}">
-                    </label>
-                    
-                    <label>Finished:
+                        <input type="text" class="todo-priority" name="priority" placeholder="Priority" value="${todo.priority}">
                         <input type="checkbox" class="todo-checked" name="checked" ${todo.checked ? "checked" : ""}}>
-                    </label>
                     `;
 
                     const buttonContainer = document.createElement("div");
@@ -491,7 +477,7 @@ export class HTMLHandler {
 
                     const cancelButton = HTMLHandler.createCancelButton();
                     buttonContainer.append(cancelButton);
-                    
+
                     const submitButton = HTMLHandler.createSubmitButton();
                     buttonContainer.append(submitButton);
                     

@@ -12,7 +12,14 @@ body{
     display: flex;
     flex-direction: column;
     gap: 12px;
-    padding: 16px;
+    padding: 32px;
+}
+
+body > header{
+    font-size: 3rem;
+    font-style: italic;
+    box-shadow: 0 2px 1px rgba(0, 0, 0, 0.1);
+    border-radius: 2px;
 }
 
 body > nav{
@@ -91,7 +98,7 @@ body > .content{
     gap: 12px;
 }
 
-.todo-edit-button, .todo-cancel-button, .todo-submit-button{
+.todo-edit-button, .todo-cancel-button, .todo-submit-button, .todo button{
     aspect-ratio: 1/1;
     align-self: end;
     width: 10%;

@@ -62,6 +62,33 @@ export class HTMLHandler {
         }
     }
 
+    static getTodoListFromTodoElement(todoElement){
+        try {
+            let todoList;
+
+            const projectElement = todoElement.closest(".project");
+            const projectUUID = projectElement.dataset.uuid;
+            const project = ProjectsMethods.getProject(projectUUID);
+            console.log("Project of todo: ", project);
+            if (!(project.hasOwnProperty("uuid"))){
+                throw new Error("Project not found");
+            }
+    
+            const todoListElement = todoElement.closest(".todo-list");
+            const todoListUUID = todoListElement.dataset.uuid;
+            todoList = ProjectMethods.getTodoList(project, todoListUUID);
+            console.log("todoList of todo: ", todoList);
+            if (!(todoList instanceof TodoList)){
+                throw new Error("TodoList not found");
+            }
+
+            return todoList;
+            
+        } catch (error) {
+            console.error(error);
+        }
+    }
+
     // creates html element for todo
     static createTodoElement = (todo)=>{
         const todoElement = document.createElement("div");
@@ -109,6 +136,12 @@ export class HTMLHandler {
         `;
     }
 
+    static addDeleteButtonToTodoElement = (todoElement)=>{
+        todoElement.innerHTML += `
+        <button class="grabbable logo todo-delete-button" type="button"> <object data="${cancelTodoIMG}" type="image/svg+xml" alt="Delete Todo"> </button>
+        `;
+    }
+
     static addSubmitButtonToTodoElement = (todoElement)=>{
         todoElement.innerHTML += `
         <button class="grabbable logo todo-submit-button" type="submit"> <object data="${submitTodoIMG}" type="image/svg+xml" alt="Submit Todo"> </button>
@@ -128,6 +161,7 @@ export class HTMLHandler {
         todoList.todos.forEach(todo => {
             const todoElement = this.createTodoElement(todo);
             this.addEditButtonToTodoElement(todoElement);
+            this.addDeleteButtonToTodoElement(todoElement);
             todoListElement.append(todoElement);
         });
 
@@ -197,6 +231,26 @@ export class HTMLHandler {
             if (e.target.classList.contains("todo-edit-button")){
                 const newModal = this.Modal.createFromEvent(e);
                 document.body.append(newModal);
+            }
+            if (e.target.classList.contains("todo-delete-button")){
+                console.log("Todo Delete Button Pressed");
+                const todoElement = e.target.closest(".todo");
+                console.log("Todo Element:", todoElement);
+                const todo = HTMLHandler.getTodoFromTodoElement(todoElement);
+                if (!(todo instanceof Todo)){
+                    throw new Error("Todo not found");
+                }
+                // delete todo
+                // go into todolist of todo and call remove todo func
+                const todoList = HTMLHandler.getTodoListFromTodoElement(todoElement);
+                if (!(todoList instanceof TodoList)){
+                    throw new Error("Todolist not found");
+                }
+                TodoListMethods.removeTodo(todoList, todo);
+
+                LocalStorageHandler.saveProjectData();
+                // remove todo element from page
+                todoElement.remove();
             }
         });
     }

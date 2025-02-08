@@ -71,7 +71,7 @@ export class TodoListMethods {
         todoList.uuidToTodo.delete(todo.uuid);
         const index = todoList.todos.indexOf(todo);
         if (!(typeof index === "number")){
-            throw new Error(`Todo not found in todoList`);
+            throw new Error(`Todo not found in Todo List`);
         }
         if (index >= 0) {
             return todoList.todos.splice(index, 1);
@@ -119,6 +119,9 @@ export class ProjectMethods {
     static removeTodoList(project, todoList) {
         project.uuidToTodoList.delete(todoList.uuid);
         const index = project.todoLists.indexOf(todoList);
+        if (!(typeof index === "number")){
+            throw new Error(`Todo List not found in Project`);
+        }
         if (index >= 0) {
             return project.todoLists.splice(index, 1);
         }
@@ -157,6 +160,9 @@ export class ProjectsMethods{
     static removeProject(project) {
         Projects.uuidToProject.delete(project.uuid);
         const index = Projects.list.indexOf(project);
+        if (!(typeof index === "number")){
+            throw new Error(`Project not found in Projects`);
+        }
         if (index >= 0) {
             return Projects.list.splice(index, 1);
         }

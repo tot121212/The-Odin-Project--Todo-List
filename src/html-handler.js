@@ -214,7 +214,7 @@ export class HTMLHandler {
         button.classList.add("grabbable");
         button.classList.add("logo");
         button.classList.add("submit-button");
-        button.type = "button";
+        button.type = "submit";
 
         const object = document.createElement("object");
         object.data = submitTodoIMG;

@@ -105,6 +105,11 @@ body > .content{
     margin-left: auto;
 }
 
+.todo-list > *:nth-child(n+3){
+    border-top: 1px dotted gray;
+    padding-top: 16px;
+}
+
 .todo{
     display: flex;
     flex-direction: column;

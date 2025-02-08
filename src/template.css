@@ -84,12 +84,25 @@ body > .content{
     max-width: 50%;
 }
 
-.todo-list-name{
+.todo-list > header{
     font-size: large;
     text-align: center;
     border-bottom: 1px solid black;
     padding: 8px;
     margin-bottom: 8px;
+
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+}
+
+.todo-list .todo-list-name{
+    margin-left: auto;
+}
+
+.todo-list button.add-button{
+    margin-left: auto;
 }
 
 .todo{
@@ -98,7 +111,7 @@ body > .content{
     gap: 12px;
 }
 
-.todo-edit-button, .todo-cancel-button, .todo-submit-button, .todo button{
+button.logo{
     aspect-ratio: 1/1;
     align-self: end;
     width: 10%;

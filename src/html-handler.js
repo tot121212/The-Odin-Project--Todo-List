@@ -5,6 +5,7 @@ import { LocalStorageHandler } from "./local-storage-handler.js";
 import editTodoIMG from "./media/angle-right.svg";
 import submitTodoIMG from "./media/check.svg";
 import cancelTodoIMG from "./media/cross.svg";
+import addTodoIMG from "./media/multiple.svg";
 
 // DAMN YOU JAVASCRIPT *SHAKES FIST*, shouldve just used sql but :shrug:
 export class HTMLHandler {
@@ -25,9 +26,6 @@ export class HTMLHandler {
         
     }
     */
-    static clearContent = ()=>{
-        document.querySelector(".content").innerHTML = "";
-    }
 
     static getTodoFromTodoElement(todoElement){
         try {
@@ -89,6 +87,36 @@ export class HTMLHandler {
         }
     }
 
+    static getTodoListFromTodoListElement(todoListElement){
+        try {
+            let todoList;
+
+            const projectElement = todoListElement.closest(".project");
+            const projectUUID = projectElement.dataset.uuid;
+            const project = ProjectsMethods.getProject(projectUUID);
+            console.log("Project of todo: ", project);
+            if (!(project.hasOwnProperty("uuid"))){
+                throw new Error("Project not found");
+            }
+
+            const todoListUUID = todoListElement.dataset.uuid;
+            todoList = ProjectMethods.getTodoList(project, todoListUUID);
+            console.log("todoList of todo: ", todoList);
+            if (!(todoList instanceof TodoList)){
+                throw new Error("TodoList not found");
+            }
+
+            return todoList;
+
+        } catch (error) {
+            console.error(error);
+        }
+    }
+
+    static clearContent = ()=>{
+        document.querySelector(".content").innerHTML = "";
+    }
+
     // creates html element for todo
     static createTodoElement = (todo)=>{
         const todoElement = document.createElement("div");
@@ -96,12 +124,21 @@ export class HTMLHandler {
         todoElement.dataset.uuid = todo.uuid;
 
         todoElement.innerHTML = `
-        <header class="todo-title"></header>
+        <header class="todo-title">Empty Todo</header>
         <main class="todo-desc"></main>
         <div class="todo-due-date"></div>
         <div class="todo-priority"></div>
         <div class="todo-checked"></div>
         `;
+
+        const buttonContainer = document.createElement("div");
+        todoElement.append(buttonContainer);
+
+        const deleteButton = this.createDeleteButton();
+        buttonContainer.append(deleteButton);
+
+        const editButton = this.createEditButton();
+        buttonContainer.append(editButton);
 
         return todoElement;
     }
@@ -124,28 +161,97 @@ export class HTMLHandler {
         todoChecked.textContent = todo.checked;
     }
 
-    static addEditButtonToTodoElement = (todoElement)=>{
-        todoElement.innerHTML += `
-        <button class="grabbable logo todo-edit-button" type="button"><object data="${editTodoIMG}" type="image/svg+xml" alt="Edit Todo"></object></button>
-        `;
+    static createEditButton = ()=>{
+        const button = document.createElement("button");
+        button.classList.add("grabbable");
+        button.classList.add("logo");
+        button.classList.add("edit-button");
+        button.type = "button";
+
+        const object = document.createElement("object");
+        object.data = editTodoIMG;
+        object.type = "image/svg+xml";
+        object.alt = "Edit";
+        button.append(object);
+
+        return button;
     }
 
-    static addCancelButtonToTodoElement = (todoElement)=>{
-        todoElement.innerHTML += `
-        <button class="grabbable logo todo-cancel-button" type="button"> <object data="${cancelTodoIMG}" type="image/svg+xml" alt="Cancel Todo"> </button>
-        `;
+    static createCancelButton = ()=>{
+        const button = document.createElement("button");
+        button.classList.add("grabbable");
+        button.classList.add("logo");
+        button.classList.add("cancel-button");
+        button.type = "button";
+
+        const object = document.createElement("object");
+        object.data = cancelTodoIMG;
+        object.type = "image/svg+xml";
+        object.alt = "Cancel";
+        button.append(object);
+
+        return button;
+    }
+    
+    static createDeleteButton = ()=>{
+        const button = document.createElement("button");
+        button.classList.add("grabbable");
+        button.classList.add("logo");
+        button.classList.add("delete-button");
+        button.type = "button";
+
+        const object = document.createElement("object");
+        object.data = cancelTodoIMG;
+        object.type = "image/svg+xml";
+        object.alt = "Delete";
+        button.append(object);
+
+        return button;
     }
 
-    static addDeleteButtonToTodoElement = (todoElement)=>{
-        todoElement.innerHTML += `
-        <button class="grabbable logo todo-delete-button" type="button"> <object data="${cancelTodoIMG}" type="image/svg+xml" alt="Delete Todo"> </button>
-        `;
+    static createSubmitButton = ()=>{
+        const button = document.createElement("button");
+        button.classList.add("grabbable");
+        button.classList.add("logo");
+        button.classList.add("submit-button");
+        button.type = "button";
+
+        const object = document.createElement("object");
+        object.data = submitTodoIMG;
+        object.type = "image/svg+xml";
+        object.alt = "Submit";
+        button.append(object);
+
+        return button;
     }
 
-    static addSubmitButtonToTodoElement = (todoElement)=>{
-        todoElement.innerHTML += `
-        <button class="grabbable logo todo-submit-button" type="submit"> <object data="${submitTodoIMG}" type="image/svg+xml" alt="Submit Todo"> </button>
-        `;
+    static createAddButton = ()=>{
+        const button = document.createElement("button");
+        button.classList.add("grabbable");
+        button.classList.add("logo");
+        button.classList.add("add-button");
+        button.type = "button";
+
+        const object = document.createElement("object");
+        object.data = addTodoIMG;
+        object.type = "image/svg+xml";
+        object.alt = "Add";
+        button.append(object);
+
+        return button;
+    }
+
+    static onAddTodoToTodoList = (e)=>{
+        const todoListElement = e.target.closest(".todo-list");
+        const todoList = HTMLHandler.getTodoListFromTodoListElement(todoListElement);
+
+        const todo = new Todo("Empty Todo", "", "0/00/0000", "Normal");
+        TodoListMethods.addTodo(todoList, todo);
+        
+        const todoElement = this.createTodoElement(todo);
+        todoListElement.append(todoElement);
+
+        LocalStorageHandler.saveProjectData();
     }
 
     // list element that contains todos
@@ -154,14 +260,19 @@ export class HTMLHandler {
         todoListElement.classList.add("todo-list");
         todoListElement.dataset.uuid = todoList.uuid;
         
-        const todoListNameElement = document.createElement("header");
+        const todoListHeader = document.createElement("header");
+        todoListElement.append(todoListHeader);
+
+        const todoListNameElement = document.createElement("div");
         todoListNameElement.classList.add("todo-list-name");
-        todoListElement.append(todoListNameElement);
+        todoListHeader.append(todoListNameElement);
+
+        const addTodoButton = this.createAddButton();
+        todoListHeader.append(addTodoButton);
+        addTodoButton.addEventListener("click", HTMLHandler.onAddTodoToTodoList);
 
         todoList.todos.forEach(todo => {
             const todoElement = this.createTodoElement(todo);
-            this.addEditButtonToTodoElement(todoElement);
-            this.addDeleteButtonToTodoElement(todoElement);
             todoListElement.append(todoElement);
         });
 
@@ -228,11 +339,11 @@ export class HTMLHandler {
 
     static projectElementListenForClicks = (projectElement)=>{
         projectElement.addEventListener("click", (e)=>{
-            if (e.target.classList.contains("todo-edit-button")){
+            if (e.target.classList.contains("edit-button")){
                 const newModal = this.Modal.createFromEvent(e);
                 document.body.append(newModal);
             }
-            if (e.target.classList.contains("todo-delete-button")){
+            if (e.target.classList.contains("delete-button")){
                 console.log("Todo Delete Button Pressed");
                 const todoElement = e.target.closest(".todo");
                 console.log("Todo Element:", todoElement);
@@ -308,7 +419,7 @@ export class HTMLHandler {
             console.log("Event Target:");
             console.log(e.target);
             switch (true){
-                case (e.target.classList.contains("todo-edit-button")):
+                case (e.target.classList.contains("edit-button")):
                     console.log("Todo Edit Button Pressed");
                     //get todo with uuid
                     const todoElement = e.target.closest(".todo");
@@ -345,14 +456,18 @@ export class HTMLHandler {
                     </label>
                     `;
 
-                    HTMLHandler.addCancelButtonToTodoElement(todoEditForm);
-                    HTMLHandler.addSubmitButtonToTodoElement(todoEditForm);
+                    const buttonContainer = document.createElement("div");
+                    todoEditForm.append(buttonContainer);
+                    const cancelButton = HTMLHandler.createCancelButton();
+                    buttonContainer.append(cancelButton);
+                    const submitButton = HTMLHandler.createSubmitButton();
+                    buttonContainer.append(submitButton);
                     
                     modal.append(todoEditForm);
                     console.log(modal);
                     
                     todoEditForm.addEventListener("click", (e)=>{
-                        if (e.target.classList.contains("todo-cancel-button")){
+                        if (e.target.classList.contains("cancel-button")){
                             this.clearModal(modal);
                         }
                     });
@@ -361,7 +476,7 @@ export class HTMLHandler {
                     todoEditForm.addEventListener("submit", async (e)=>{
                         e.preventDefault();
 
-                        if (e.submitter && e.submitter.classList.contains("todo-submit-button")){
+                        if (e.submitter && e.submitter.classList.contains("submit-button")){
 
                             console.log("Submit Button Pressed");
                             
@@ -415,7 +530,7 @@ export class HTMLHandler {
                             if (!(todoElement instanceof Element)) {
                                 throw new Error("Todo element not found on page");
                             }
-                        
+                            
                             HTMLHandler.updateTodoElement(todo, todoElement);
                         }
                     });

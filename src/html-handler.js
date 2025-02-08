@@ -6,6 +6,8 @@ import editTodoIMG from "./media/angle-right.svg";
 import submitTodoIMG from "./media/check.svg";
 import cancelTodoIMG from "./media/cross.svg";
 import addTodoIMG from "./media/multiple.svg";
+import unfilledCircleIMG from "./media/circle-dashed.svg";
+import filledCircleIMG from "./media/circle.svg";
 
 // DAMN YOU JAVASCRIPT *SHAKES FIST*, shouldve just used sql but :shrug:
 export class HTMLHandler {
@@ -132,6 +134,7 @@ export class HTMLHandler {
         `;
 
         const buttonContainer = document.createElement("div");
+        buttonContainer.classList.add("button-container");
         todoElement.append(buttonContainer);
 
         const deleteButton = this.createDeleteButton();
@@ -141,6 +144,30 @@ export class HTMLHandler {
         buttonContainer.append(editButton);
 
         return todoElement;
+    }
+
+    static createCheckedCircleElement = ()=>{
+        const object = document.createElement("object");
+        object.data = filledCircleIMG;
+        object.type = "image/svg+xml";
+        object.alt = "Checked";
+
+        const div = document.createElement("div");
+        div.append(object);
+        div.classList.add("logo");
+        return div;
+    }
+
+    static createUncheckedCircleElement = ()=>{
+        const object = document.createElement("object");
+        object.data = unfilledCircleIMG;
+        object.type = "image/svg+xml";
+        object.alt = "Unchecked";
+
+        const div = document.createElement("div");
+        div.append(object);
+        div.classList.add("logo");
+        return div;
     }
 
     // updates todoElement with todo data
@@ -158,7 +185,9 @@ export class HTMLHandler {
         todoPriority.textContent = todo.priority;
 
         const todoChecked = todoElement.querySelector(".todo-checked");
-        todoChecked.textContent = todo.checked;
+        todoChecked.innerHTML = "";
+        const circleElement = todo.checked ? HTMLHandler.createCheckedCircleElement() : HTMLHandler.createUncheckedCircleElement();
+        todoChecked.append(circleElement);
     }
 
     static createEditButton = ()=>{
@@ -457,9 +486,12 @@ export class HTMLHandler {
                     `;
 
                     const buttonContainer = document.createElement("div");
+                    buttonContainer.classList.add("button-container");
                     todoEditForm.append(buttonContainer);
+
                     const cancelButton = HTMLHandler.createCancelButton();
                     buttonContainer.append(cancelButton);
+                    
                     const submitButton = HTMLHandler.createSubmitButton();
                     buttonContainer.append(submitButton);
                     

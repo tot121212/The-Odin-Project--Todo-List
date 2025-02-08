@@ -18,7 +18,7 @@ body{
 body > header{
     font-size: 3rem;
     font-style: italic;
-    box-shadow: 0 2px 1px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 2px 1px rgba(0, 0, 0, 0.15);
     border-radius: 2px;
 }
 
@@ -54,7 +54,7 @@ body > .content{
     flex-direction: column;
     align-items: center;
 
-    border: 1px solid black;
+    border: 1px solid rgba(0, 0, 0, 0.2);
     border-radius: 8px;
 
     gap: 4px;
@@ -87,7 +87,6 @@ body > .content{
 .todo-list > header{
     font-size: large;
     text-align: center;
-    border-bottom: 1px solid black;
     padding: 8px;
     margin-bottom: 8px;
 
@@ -105,8 +104,9 @@ body > .content{
     margin-left: auto;
 }
 
-.todo-list > *:nth-child(n+3){
-    border-top: 1px dotted gray;
+.todo-list > *:nth-child(n){
+    box-shadow: 1px 2px 1px rgba(0, 0, 0, 0.15);
+    border-radius: 2px;
     padding-top: 16px;
 }
 
@@ -116,12 +116,25 @@ body > .content{
     gap: 12px;
 }
 
-button.logo{
+.todo .todo-title{
+    font-size: x-large;
+}
+
+.logo{
     aspect-ratio: 1/1;
     align-self: end;
     width: 10%;
     max-width: 2rem;
     min-width: 1.5rem;
+}
+
+.small-logo{
+    width: 6%;
+}
+
+.button-container, .todo-checked{
+    display: flex;
+    flex-direction: row;
 }
 
 .grabbable:hover{
